@@ -1,0 +1,121 @@
+// utils/usStates.ts
+
+export const usStates = [
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
+];
+
+
+// City to State mapping function
+export const cityStateMapping = (cityName: string): string => {
+    const cityStateMap: { [key: string]: string } = {
+        // // Major cities mapping
+        // "new york": "New York",
+        // "los angeles": "California",
+        // "chicago": "Illinois",
+        // "houston": "Texas",
+        // "phoenix": "Arizona",
+        // "philadelphia": "Pennsylvania",
+        // "san antonio": "Texas",
+        // "san diego": "California",
+        // "dallas": "Texas",
+        // "san jose": "California",
+        // "austin": "Texas",
+        // "jacksonville": "Florida",
+        // "fort worth": "Texas",
+        // "columbus": "Ohio",
+        // "charlotte": "North Carolina",
+        // "san francisco": "California",
+        // "seattle": "Washington",
+        // "denver": "Colorado",
+        // "washington": "District of Columbia",
+        // "boston": "Massachusetts",
+        // "miami": "Florida",
+        // "orlando": "Florida",
+        // "atlanta": "Georgia",
+        // "detroit": "Michigan",
+        // "las vegas": "Nevada",
+        // "minneapolis": "Minnesota",
+        // "nashville": "Tennessee",
+
+        // Ohio cities
+        "cleveland": "Ohio",
+        "cincinnati": "Ohio",
+        "toledo": "Ohio",
+        "akron": "Ohio",
+        "dayton": "Ohio",
+        "youngstown": "Ohio",
+        "canton": "Ohio",
+        
+        // Massachusetts cities
+        "worcester": "Massachusetts",
+        "springfield": "Massachusetts",
+        "cambridge": "Massachusetts",
+        "lowell": "Massachusetts",
+        "brooklyn": "Massachusetts",
+        "quincy": "Massachusetts",
+        "new bedford": "Massachusetts",
+        
+        // Rhode Island cities
+        "providence": "Rhode Island",
+        "warwick": "Rhode Island",
+        "cranston": "Rhode Island",
+        "pawtucket": "Rhode Island",
+        "east providence": "Rhode Island",
+        "woonsocket": "Rhode Island",
+        "newport": "Rhode Island",
+        
+        // Add more cities as needed
+    };
+
+    const normalizedCity = cityName.toLowerCase().trim();
+    return cityStateMap[normalizedCity] || "";
+};

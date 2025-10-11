@@ -1,0 +1,229 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ===== MAIN THEME VARIABLES (Yahan sirf ye 5 variables change karo) ===== */
+:root {
+  /* Primary Colors - Yahan apni brand colors set karo */
+  --theme-primary: #1a365d;
+  /* Main brand color */
+  --theme-secondary: #2d5a87;
+  /* Secondary brand color */
+  --theme-accent: #3182ce;
+  /* Accent color for highlights */
+
+  /* Background & Surface */
+  --theme-background: #ffffff;
+  /* Main background */
+  --theme-surface: #f8fafc;
+  /* Cards, surfaces */
+
+  /* Text Colors */
+  --theme-text-primary: #1a202c;
+
+    --theme-text-primary-hover: #fff;
+
+  /* Main text */
+  --theme-text-secondary: #718096;
+  /* Secondary text */
+  --theme-text-muted: #a0aec0;
+  /* Muted text */
+
+  /* Borders & Dividers */
+  --theme-border: #e2e8f0;
+  /* Border color */
+  --theme-border-hover: #cbd5e0;
+  /* Hover border */
+}
+
+/* Auto-generated system colors from your theme variables */
+@theme inline {
+  --color-background: var(--theme-background);
+  --color-foreground: var(--theme-text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Primary colors from your theme */
+  --color-primary: var(--theme-primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--theme-surface);
+  --color-secondary-foreground: var(--theme-text-primary);
+
+  /* Surface colors */
+  --color-card: var(--theme-surface);
+  --color-card-foreground: var(--theme-text-primary);
+  --color-popover: var(--theme-background);
+  --color-popover-foreground: var(--theme-text-primary);
+
+  /* Interactive elements */
+  --color-accent: var(--theme-accent);
+  --color-accent-foreground: #ffffff;
+  --color-muted: var(--theme-surface);
+  --color-muted-foreground: var(--theme-text-secondary);
+
+  /* Borders and inputs */
+  --color-border: var(--theme-border);
+  --color-input: var(--theme-border);
+  --color-ring: var(--theme-accent);
+
+  /* Destructive (for errors, delete buttons, etc.) */
+  --color-destructive: #e53e3e;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Chart colors for data visualization */
+  --color-chart-1: var(--theme-primary);
+  --color-chart-2: var(--theme-secondary);
+  --color-chart-3: var(--theme-accent);
+  --color-chart-4: #38b2ac;
+  --color-chart-5: #ed8936;
+
+  /* Sidebar colors */
+  --color-sidebar: var(--theme-background);
+  --color-sidebar-foreground: var(--theme-text-primary);
+  --color-sidebar-primary: var(--theme-primary);
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: var(--theme-surface);
+  --color-sidebar-accent-foreground: var(--theme-text-primary);
+  --color-sidebar-border: var(--theme-border);
+  --color-sidebar-ring: var(--theme-accent);
+}
+
+/* Dark mode support (future ke liye ready) */
+.dark {
+  --theme-background: #1a202c;
+  --theme-surface: #2d3748;
+  --theme-text-primary: #f7fafc;
+  --theme-text-secondary: #a0aec0;
+  --theme-text-muted: #718096;
+  --theme-border: #4a5568;
+  --theme-border-hover: #718096;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+
+  /* Custom utility classes aapke theme ke liye */
+  .theme-bg-primary {
+    background-color: var(--theme-primary);
+  }
+
+  .theme-bg-secondary {
+    background-color: var(--theme-secondary);
+  }
+
+  .theme-bg-surface {
+    background-color: var(--theme-surface);
+  }
+
+  .theme-text-primary {
+    color: var(--theme-text-primary);
+  }
+
+  .theme-text-secondary {
+    color: var(--theme-text-secondary);
+  }
+
+  .theme-text-muted {
+    color: var(--theme-text-muted);
+  }
+
+  .theme-border {
+    border-color: var(--theme-border);
+  }
+
+  .theme-accent {
+    color: var(--theme-accent);
+  }
+
+  .theme-bg-accent {
+    background-color: var(--theme-accent);
+  }
+}
+
+/* Hover effects */
+@layer utilities {
+  .theme-hover:hover {
+    background-color: var(--theme-surface);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .theme-button-primary {
+    background-color: var(--theme-primary);
+    color: white;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(46, 134, 171, 0.2);
+  }
+
+  .theme-button-primary:hover {
+    background-color: var(--theme-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(46, 134, 171, 0.3);
+  }
+
+  .theme-button-secondary {
+    background-color: var(--theme-surface);
+    color: var(--theme-text-primary);
+    border: 1px solid var(--theme-border);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .theme-button-secondary:hover {
+    background-color: var(--theme-accent);
+    color: var(--theme-text-primary-hover);
+    border-color: var(--theme-accent);
+    transform: translateY(-1px);
+  }
+
+  /* .theme-button-accent {
+    background-color: var(--theme-accent);
+    color: #ffffff;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(246, 213, 92, 0.2);
+  }
+
+  .theme-button-accent:hover {
+    background-color: var(--theme-secondary);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(246, 213, 92, 0.3);
+  } */
+
+  .theme-button-accent {
+  background-color: var(--theme-accent) !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(246, 213, 92, 0.2);
+}
+
+.theme-button-accent:hover {
+  background-color: var(--theme-secondary) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(246, 213, 92, 0.3);
+}
+
+
+  .theme-bg-accent-hover {
+    background-color: var(--theme-accent);
+    color: #000 !important;
+    /* force white text */
+  }
+  .theme-bg-accent-hover:hover {
+    background-color: var(--theme-secondary);
+    color: #000 !important;
+    /* force white text */
+  }
+}
