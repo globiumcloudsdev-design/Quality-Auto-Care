@@ -1659,49 +1659,95 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
         <div className="mb-8">
             <div className="flex justify-between items-center relative">
                 {/* Progress Line */}
-                <div
+                <motion.div
                     className="absolute top-4 left-0 right-0 h-1 bg-gray-200 z-0"
                     style={{
                         transform: 'translateY(-50%)',
                         margin: '0 40px'
                     }}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
                 >
-                    <div
-                        className="h-full theme-button-accent transition-all duration-500 ease-in-out"
-                        style={{
-                            width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`
+                    <motion.div
+                        className="h-full theme-button-accent"
+                        initial={{ scaleX: 0 }}
+                        animate={{
+                            scaleX: (currentStep - 1) / (steps.length - 1),
+                            transition: { duration: 0.5, ease: "easeInOut" }
                         }}
-                    ></div>
-                </div>
+                        style={{ transformOrigin: 'left' }}
+                    ></motion.div>
+                </motion.div>
 
                 {/* Steps */}
-                {steps.map((step) => (
-                    <div key={step.number} className="flex flex-col items-center z-10">
-                        <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300 ${step.number === currentStep
-                                ? "theme-button-accent border-[#3182ce] text-white scale-110"
+                {steps.map((step, index) => (
+                    <motion.div
+                        key={step.number}
+                        className="flex flex-col items-center z-10"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                            duration: 0.5,
+                            delay: index * 0.1,
+                            ease: "easeOut"
+                        }}
+                    >
+                        <motion.div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 font-bold ${step.number === currentStep
+                                ? "theme-button-accent border-[#3182ce] text-white"
                                 : step.number < currentStep
                                     ? "theme-button-accent border-[#3182ce] text-white"
                                     : "bg-white border-gray-300 text-gray-500"
                                 }`}
+                            animate={{
+                                scale: step.number === currentStep ? 1.1 : 1,
+                                boxShadow: step.number === currentStep
+                                    ? "0 0 0 4px rgba(49, 130, 206, 0.2)"
+                                    : "none"
+                            }}
+                            transition={{
+                                duration: 0.3,
+                                ease: "easeInOut"
+                            }}
+                            whileHover={{
+                                scale: step.number <= currentStep ? 1.15 : 1,
+                                transition: { duration: 0.2 }
+                            }}
                         >
                             {step.number < currentStep ? (
-                                <Check size={16} />
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3, delay: 0.1 }}
+                                >
+                                    <Check size={16} />
+                                </motion.div>
                             ) : (
-                                step.number
+                                <motion.span
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {step.number}
+                                </motion.span>
                             )}
-                        </div>
-                        <span
+                        </motion.div>
+                        <motion.span
                             className={`text-xs mt-2 font-medium text-center max-w-[100px] ${step.number === currentStep
                                 ? "text-[#3182ce] font-bold"
                                 : step.number < currentStep
                                     ? "text-[#3182ce]"
                                     : "text-gray-500"
                                 }`}
+                            animate={{
+                                color: step.number === currentStep ? "#3182ce" : step.number < currentStep ? "#3182ce" : "#6b7280"
+                            }}
+                            transition={{ duration: 0.3 }}
                         >
                             {step.label}
-                        </span>
-                    </div>
+                        </motion.span>
+                    </motion.div>
                 ))}
             </div>
         </div>
@@ -2154,7 +2200,7 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2">
-                            Service Type
+                            Select Vehicle
                         </label>
                         <Select
                             value={vehicle.serviceType}
@@ -2340,6 +2386,19 @@ const Booking = () => {
     const [promoCode, setPromoCode] = useState("");
     const [isPromoValid, setIsPromoValid] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
+    const [claimedDiscount, setClaimedDiscount] = useState<string | null>(null);
+
+    // Check for claimed discount on component mount
+    useEffect(() => {
+        const discount = localStorage.getItem('claimedDiscount');
+        if (discount) {
+            setClaimedDiscount(discount);
+            setPromoCode(discount);
+            setIsPromoValid(true);
+            setDiscountPercent(15); // Assuming 15% discount for DISCOUNT15
+            localStorage.removeItem('claimedDiscount'); // Remove after applying
+        }
+    }, []);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingId, setBookingId] = useState("");

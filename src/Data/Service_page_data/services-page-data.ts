@@ -1,5 +1,6 @@
 // /src/Data/Service_page_data/services-page-data.ts
 import type { ServicesRecord } from "@/Types/Service_Page_types/service-page-type";
+import inetriorImage from '../../../public/picture/inetrior-ser-hbg.png';
 
 const services: ServicesRecord = {
   interior: {
@@ -9,18 +10,20 @@ const services: ServicesRecord = {
     description:
       "Deep interior clean: stain removal, dashboard conditioning, upholstery & carpet shampoo, leather care and odor elimination.",
     price: "$150 - $300",
-    duration: "2 - 4 hours",
-    heroImage:
-      "https://images.unsplash.com/photo-1695658280419-f5a823644880?q=80&w=1331&auto=format&fit=crop",
+    duration: "2 - 3 hours",
+    heroImage: inetriorImage,
+    heroAnimationClass: "animate-fade-in-up",
     content: [
       {
         type: "paragraph",
         text:
           "Professional interior detailing using premium, pH-balanced cleaners and commercial-grade equipment. We thoroughly clean carpets, crevices and vents, condition leather surfaces, and sanitize all interior components.",
+        animationClass: "animate-fade-in-up",
       },
       {
         type: "heading",
         text: "Included Services",
+        animationClass: "animate-fade-in-up animation-delay-300",
       },
       {
         type: "list",
@@ -29,28 +32,34 @@ const services: ServicesRecord = {
             title: "Deep Vacuum & Steam Cleaning",
             description:
               "Complete vacuum of seats, carpets, headliners & trunk; professional steam cleaning for deep stains.",
+            animationClass: "animate-fade-in-up animation-delay-600",
           },
           {
             title: "Shampoo & Extraction",
             description:
               "Carpet & upholstery shampoo with hot water extraction for toughest stains.",
+            animationClass: "animate-fade-in-up animation-delay-800",
           },
           {
             title: "Premium Leather Care",
             description:
               "Deep clean + premium conditioning to restore suppleness and prevent cracking.",
+            animationClass: "animate-fade-in-up animation-delay-1000",
           },
           {
             title: "Complete Interior Detailing",
             description:
               "Clean, dress and protect all interior trims, plastics, and dashboard components.",
+            animationClass: "animate-fade-in-up animation-delay-1200",
           },
           {
             title: "Odor Elimination",
             description:
               "Professional odor removal treatment for smoke, pets, or food smells.",
+            animationClass: "animate-fade-in-up animation-delay-1400",
           },
         ],
+        animationClass: "animate-fade-in-up animation-delay-400",
       },
     ],
     beforeAfter: [
@@ -88,9 +97,10 @@ const services: ServicesRecord = {
     description:
       "Complete exterior wash, clay bar decontamination, paint correction, wheel & tire dressing and premium gloss finish protection.",
     price: "$120 - $400",
-    duration: "2 - 5 hours (depending on package)",
+    duration: "2 - 3 hours (depending on package)",
     heroImage:
       "https://plus.unsplash.com/premium_photo-1661443389760-fde4402180fa?q=80&w=1170&auto=format&fit=crop",
+    heroAnimationClass: "animate-fade-in-up",
     content: [
       {
         type: "paragraph",
@@ -146,6 +156,7 @@ const services: ServicesRecord = {
     duration: "1-3 days (depending on vehicle size)",
     heroImage:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQcHoc8GJTQdWZ3BUrsZwp8TBCIJyt8xEL1Q&s",
+    heroAnimationClass: "animate-fade-in-up",
     content: [
       {
         type: "paragraph",
@@ -211,6 +222,7 @@ const services: ServicesRecord = {
     duration: "2-4 days (includes meticulous prep & cure time)",
     heroImage:
       "https://images.unsplash.com/photo-1606577924006-27d39b132ae2?q=80&w=1600&auto=format&fit=crop",
+    heroAnimationClass: "animate-fade-in-up",
     content: [
       {
         type: "paragraph",

@@ -6,18 +6,22 @@ export type BeforeAfterImage = string | StaticImageData;
 export interface ParagraphContent {
   type: "paragraph";
   text: string;
+  animationClass?: string;
 }
 export interface HeadingContent {
   type: "heading";
   text: string;
+  animationClass?: string;
 }
 export interface ListContent {
   type: "list";
-  items: { title: string; description: string }[];
+  items: { title: string; description: string; animationClass?: string }[];
+  animationClass?: string;
 }
 export interface NumberedListContent {
   type: "numbered-list";
   items: string[];
+  animationClass?: string;
 }
 export type ContentItem =
   | ParagraphContent
@@ -33,6 +37,7 @@ export interface ServiceData {
   price?: string;
   duration?: string;
   heroImage: string | StaticImageData;
+  heroAnimationClass?: string;
   content: ContentItem[];
   beforeAfter: {
     before: BeforeAfterImage;
