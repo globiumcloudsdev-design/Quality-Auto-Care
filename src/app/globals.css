@@ -1,7 +1,31 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark mode selector */
+.dark * {
+  color-scheme: dark;
+}
+@keyframes bouncePop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bouncePop {
+  animation: bouncePop 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
 
 /* ===== MAIN THEME VARIABLES (Yahan sirf ye 5 variables change karo) ===== */
 :root {

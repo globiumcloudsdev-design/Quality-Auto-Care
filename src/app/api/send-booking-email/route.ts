@@ -92,6 +92,68 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const bookingData: BookingSubmission = await request.json();
 
+    // Transform booking data to match the external API schema
+    const transformedBookingData = {
+      bookingId: bookingData.bookingId,
+      webName: "Quality Auto Care",
+      formData: {
+        vehicleBookings: bookingData.formData.selectedServices.map((service, index) => ({
+          id: `${bookingData.bookingId}-vehicle-${index + 1}`,
+          serviceType: service.serviceType,
+          variant: service.variant || null,
+          mainService: bookingData.formData.mainServices.length > 0 ? bookingData.formData.mainServices[0] : null,
+          package: service.package,
+          additionalServices: bookingData.formData.additionalServices,
+          vehicleType: bookingData.formData.vehicleType,
+          vehicleMake: bookingData.formData.vehicleMake,
+          vehicleModel: bookingData.formData.vehicleModel,
+          vehicleYear: bookingData.formData.vehicleYear,
+          vehicleColor: bookingData.formData.vehicleColor,
+          vehicleLength: bookingData.formData.vehicleLength || null,
+        })),
+        firstName: bookingData.formData.firstName,
+        lastName: bookingData.formData.lastName,
+        email: bookingData.formData.email,
+        phone: bookingData.formData.phone,
+        address: bookingData.formData.address,
+        city: bookingData.formData.city,
+        state: bookingData.formData.state,
+        zip: bookingData.formData.zip,
+        date: bookingData.formData.date,
+        timeSlot: bookingData.formData.timeSlot,
+        notes: bookingData.formData.notes,
+      },
+      totalPrice: bookingData.totalPrice,
+      discountedPrice: bookingData.discountedPrice,
+      discountApplied: bookingData.discountApplied,
+      discountPercent: bookingData.discountPercent,
+      promoCode: bookingData.promoCode,
+      submittedAt: bookingData.submittedAt,
+      vehicleCount: bookingData.formData.selectedServices.length,
+      status: "confirmed",
+    };
+
+    // Send booking data to external dashboard API
+    try {
+      const dashboardResponse = await fetch('https://car-detailling-dashboard.vercel.app/api/booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transformedBookingData),
+      });
+
+      if (!dashboardResponse.ok) {
+        console.error('Failed to send booking to dashboard:', dashboardResponse.statusText);
+        // Continue with email sending even if dashboard fails
+      } else {
+        console.log('Booking sent to dashboard successfully');
+      }
+    } catch (dashboardError) {
+      console.error('Error sending booking to dashboard:', dashboardError);
+      // Continue with email sending even if dashboard fails
+    }
+
     // Helper function to get service names
     const getServiceDisplayNames = () => {
       return bookingData.formData.selectedServices.map(sel => {

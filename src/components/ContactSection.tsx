@@ -72,7 +72,7 @@ const ContactSection = () => {
 
     try {
       // API call with webName included
-      const res = await fetch("https://car-detailling-dashboard.vercel.app/api/contact", {
+      const res = await fetch("https://gc-web-app.vercel.app/api/contact ", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
