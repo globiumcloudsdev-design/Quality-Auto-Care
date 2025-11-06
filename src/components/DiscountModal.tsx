@@ -60,6 +60,15 @@ useEffect(() => {
       const promo = activePromos[0];
 
       if (promo) {
+        const currentPromoCode = promo.promoCode;
+        const claimedPromoCode = localStorage.getItem("claimed_promo_code");
+
+        // If promo code has changed, reset flags
+        if (claimedPromoCode && claimedPromoCode !== currentPromoCode) {
+          localStorage.removeItem("discount_claimed");
+          localStorage.removeItem("discount_modal_shown");
+        }
+
         setPromoData({
           title: "🎉 Special Offer!",
           description: `Get ${promo.discountPercentage}% OFF on all our services!`,
@@ -77,8 +86,13 @@ useEffect(() => {
 }, []);
 
 
-  // ✅ Show modal after user scrolls 30%
+  // ✅ Show modal after user scrolls 30%, but only once per session
   useEffect(() => {
+    const hasClaimed = localStorage.getItem("discount_claimed") === "true";
+    const hasBeenShown = localStorage.getItem("discount_modal_shown") === "true";
+
+    if (hasClaimed || hasBeenShown) return;
+
     const handleScroll = () => {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -87,6 +101,7 @@ useEffect(() => {
       if (scrollPercent >= 30) {
         setIsModalOpen(true);
         document.body.style.overflow = "hidden"; // Prevent background scroll
+        localStorage.setItem("discount_modal_shown", "true");
         window.removeEventListener("scroll", handleScroll);
       }
     };
@@ -179,6 +194,7 @@ useEffect(() => {
                   console.error("Error claiming discount:", error);
                 } finally {
                   localStorage.setItem("discount_claimed", "true");
+                  localStorage.setItem("claimed_promo_code", promoData.discountCode);
                   sessionStorage.setItem("auto_apply_promo", promoData.discountCode);
                   setHasClaimed(true);
                   setIsModalOpen(false);
