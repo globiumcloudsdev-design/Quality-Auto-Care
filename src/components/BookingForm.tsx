@@ -1,47 +1,5 @@
 "use client";
 
-// import { useState, useEffect } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Textarea } from "@/components/ui/textarea";
-// import {
-//     Select,
-//     SelectContent,
-//     SelectItem,
-//     SelectTrigger,
-//     SelectValue,
-// } from "@/components/ui/select";
-// import { Checkbox } from "@/components/ui/checkbox";
-// import { format, isSunday, isBefore, startOfDay } from "date-fns";
-// import { CalendarIcon, Check, Plus, Trash2 } from "lucide-react";
-// import { cn } from "@/lib/utils";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { motion } from "framer-motion";
-// import {
-//     serviceTypes,
-//     vehicleTypes,
-//     timeSlots,
-//     mainServices
-// } from "@/Data/booking-service";
-// import { cityStateMapping } from "@/utils/usStates";
-// import {
-//     Popover,
-//     PopoverContent,
-//     PopoverTrigger,
-// } from "@/components/ui/popover";
-// import { Calendar } from "@/components/ui/calendar";
-// import { Label } from "@/components/ui/label";
-// import {
-//     Dialog,
-//     DialogContent,
-//     DialogHeader,
-//     DialogTitle,
-//     DialogDescription,
-// } from "@/components/ui/dialog";
-// import { toast } from "react-toastify";
-
-
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,50 +40,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-
-import "react-toastify/dist/ReactToastify.css";
-
-// Define TypeScript interfaces
-interface ServicePackage {
-    id: string;
-    name: string;
-    price: number | string;
-    description: string;
-    pricingType?: string;
-    includes: string[];
-}
-
-interface AdditionalService {
-    id: string;
-    name: string;
-    price: number | string;
-    description: string;
-}
-
-interface ServiceVariant {
-    id: string;
-    name: string;
-    vehicleTypes: string[];
-    packages: ServicePackage[];
-    additionalServices: AdditionalService[];
-}
-
-interface ServiceType {
-    id: string;
-    name: string;
-    vehicleTypes: string[];
-    packages?: ServicePackage[];
-    variants?: ServiceVariant[];
-    additionalServices?: AdditionalService[];
- }
-
-
-
-
-
-
-
 
 // Define TypeScript interfaces
 interface ServicePackage {
@@ -222,6 +136,11 @@ interface ConfirmationModalProps {
     total: number;
     bookingId: string;
 }
+
+const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+};
 
 // Generate unique booking ID
 const generateBookingId = (): string => {
@@ -970,71 +889,15 @@ const Booking = () => {
     const [discountPercent, setDiscountPercent] = useState(0);
     const [claimedDiscount, setClaimedDiscount] = useState<string | null>(null);
     const [promoCodes, setPromoCodes] = useState<Promo[]>([]);
+    const [discountMessage, setDiscountMessage] = useState("");
 
   // Fetch promo codes from API on mount
 useEffect(() => {
   const fetchPromoCodes = async () => {
     try {
       const response = await fetch(
-        "https://gc-web-app.vercel.app/api/promo-codes/agent/690b5b3d70d70cbde2a59f88",
-        { cache: "no-store" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch promo codes");
-      }
-
-      const result = await response.json();
-      console.log("Fetched promo data:", result);
-
-      // ✅ Handle both array and { data: [...] } response formats
-      const promos = Array.isArray(result) ? result : result.data || [];
-
-      // ✅ Keep only active promos
-      const activePromos = promos.filter((promo: Promo) => promo.isActive);
-
-      setPromoCodes(activePromos);
-    } catch (error) {
-      console.error("Error fetching promo codes:", error);
-    }
-  };
-
-  fetchPromoCodes();
-}, []);
-
-// ✅ Check and auto-apply claimed promo
-useEffect(() => {
-  if (promoCodes.length === 0) return; // Wait for promos to load
-
-  const claimed = localStorage.getItem("discount_claimed");
-  const autoApplyPromo = sessionStorage.getItem("auto_apply_promo");
-
-  if (claimed === "true" && autoApplyPromo) {
-    // Match promo (case-insensitive)
-    const promo = promoCodes.find(
-      (p: Promo) => p.promoCode?.toUpperCase() === autoApplyPromo.toUpperCase()
-    );
-
-    if (promo) {
-      setPromoCode(promo.promoCode);
-      setDiscountPercent(promo.discountPercentage);
-      setIsPromoValid(true);
-      toast.success(`Promo code ${promo.promoCode} applied automatically!`);
-    } else {
-      toast.error(`Promo code ${autoApplyPromo} is no longer valid.`);
-    }
-
-    // ✅ Clear stored values
-    localStorage.removeItem("discount_claimed");
-    sessionStorage.removeItem("auto_apply_promo");
-  }
-}, [promoCodes]);
-// Fetch promo codes from API on mount
-useEffect(() => {
-  const fetchPromoCodes = async () => {
-    try {
-      const response = await fetch(
-        "https://gc-web-app.vercel.app/api/promo-codes/agent/690b5b3d70d70cbde2a59f88",
+        // "https://gc-web-app.vercel.app/api/promo-codes/agent/690b5b3d70d70cbde2a59f88",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/agent/${process.env.NEXT_PUBLIC_AGENT_ID}`,
         { cache: "no-store" }
       );
 
@@ -1323,60 +1186,78 @@ useEffect(() => {
     };
 
     const handleApplyPromo = async () => {
-        const cleanedPromoCode = promoCode.replace(/\s/g, '');
+        const cleanedPromoCode = promoCode.replace(/\s/g, '').toUpperCase();
         setPromoCode(cleanedPromoCode);
 
-        const promo = promoCodes.find(
-            (p) => p.promoCode && p.promoCode.toUpperCase() === cleanedPromoCode.toUpperCase()
-        );
-
-        if (!promo) {
-            setIsPromoValid(false);
-            setDiscountPercent(0);
-            toast.error("Invalid Promo Code");
+        if (!cleanedPromoCode) {
+            setDiscountMessage("Please enter a promo code");
+            toast.error("Please enter a promo code");
             return;
         }
 
         try {
-            // Check if promo is already claimed
-            const checkResponse = await fetch(`/api/discount-claim?code=${encodeURIComponent(cleanedPromoCode)}`);
-            const checkResult = await checkResponse.json();
+  // ✅ First, validate the promo code
+  const validateResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/validate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ promoCode: cleanedPromoCode }),
+    }
+  );
 
-            if (checkResult.claimed) {
-                setIsPromoValid(false);
-                setDiscountPercent(0);
-                toast.error("Promo code has already been claimed");
-                return;
-            }
+  const validateResult = await validateResponse.json();
 
-            // Apply the discount
-            setIsPromoValid(true);
-            setDiscountPercent(promo.discountPercentage);
-            toast.success(`Promo Applied! You got ${promo.discountPercentage}% off!`);
+  if (!validateResult.success || !validateResult.valid) {
+    setIsPromoValid(false);
+    setDiscountPercent(0);
+    setDiscountMessage(validateResult.message || "Invalid promo code");
+    toast.error(validateResult.message || "Invalid promo code");
+    return;
+  }
 
-            // Claim the promo
-            const claimResponse = await fetch('/api/discount-claim', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ code: cleanedPromoCode }),
-            });
+  // ✅ If valid, now apply the promo code with total amount
+  const applyResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/apply`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        promoCode: cleanedPromoCode,
+        amount: totalPrice,
+      }),
+    }
+  );
 
-            const claimResult = await claimResponse.json();
+  const applyResult = await applyResponse.json();
 
-            if (!claimResult.success) {
-                // If claiming fails, revert the discount
-                setIsPromoValid(false);
-                setDiscountPercent(0);
-                toast.error("Failed to claim promo code. Please try again.");
-            }
-        } catch (error) {
-            console.error('Error applying promo:', error);
-            setIsPromoValid(false);
-            setDiscountPercent(0);
-            toast.error("Error applying promo code. Please try again.");
-        }
+  if (applyResult.success) {
+    setIsPromoValid(true);
+    setDiscountPercent(applyResult.data.discountPercentage);
+    setDiscountMessage(
+      `Promo Applied! You got ${applyResult.data.discountPercentage}% off!`
+    );
+    toast.success(
+      `Promo Applied! You got ${applyResult.data.discountPercentage}% off!`
+    );
+  } else {
+    setIsPromoValid(false);
+    setDiscountPercent(0);
+    setDiscountMessage(applyResult.message || "Failed to apply promo code");
+    toast.error(applyResult.message || "Failed to apply promo code");
+  }
+} catch (error) {
+  console.error("Error applying promo:", error);
+  setIsPromoValid(false);
+  setDiscountPercent(0);
+  setDiscountMessage("Error applying promo code. Please try again.");
+  toast.error("Error applying promo code. Please try again.");
+}
+
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -1423,7 +1304,7 @@ useEffect(() => {
             console.log("Booking Submission Data:", submissionData);
 
             // API Call
-            const response = await fetch('https://gc-web-app.vercel.app/api/booking ', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/booking`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1448,11 +1329,6 @@ useEffect(() => {
         }
     };
 
-    const fadeIn = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-    };
-
     return (
         <div className="min-h-screen text-gray-800 bg-gray-50">
             <div className="pt-4 pb-16 flex justify-center">
@@ -1468,7 +1344,6 @@ useEffect(() => {
                                     <motion.div
                                         initial="hidden"
                                         animate="visible"
-                                        variants={fadeIn}
                                         className="space-y-6"
                                     >
                                         <div className="flex justify-between items-center">

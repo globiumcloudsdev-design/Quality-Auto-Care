@@ -133,12 +133,12 @@ const About = () => {
             })}
           </div>
 
-          {/* Call to action button with animation */}
+          {/* Call to action button with animation
           <div className="mt-8 scroll-reveal-up stagger-6">
             <button className="theme-button-accent px-8 py-3 rounded-lg font-semibold hover-lift pulse-accent">
               Learn More About Us
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

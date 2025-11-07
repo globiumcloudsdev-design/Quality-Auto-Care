@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+
+
 /**
  * In-memory store for claimed promo codes.
  * ⚠️ In production, replace this with a database.

@@ -1,4 +1,1 @@
-- [ ] Define Promo interface in DiscountModal.tsx
-- [ ] Replace 'any' in filter function with Promo type
-- [ ] Replace 'any' in sort function with Promo type
-- [ ] Run ESLint to verify fixes
+- [x] Modify src/app/Index.tsx to prevent fetching promo data if user has already claimed a discount
