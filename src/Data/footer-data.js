@@ -1,3 +1,4 @@
+
 import logo from "../../public/picture/main-logo.jpg";
 
 export const getFooterData = () => {
@@ -21,13 +22,13 @@ export const getFooterData = () => {
     ],
     contactInfo: {
       address: "Ohio USA",
-      phone: "+1233-242-4232",
+      phone: "+1 (623) 320-4623",
       email: "qualityautocaremobile@gmail.com",
     },
     socialLinks: [
-      { icon: "Facebook", href: "https://qualityautocaremobile" },
-      { icon: "Instagram", href: "https://www.instagram.com/qualityautocaremobile" },
-      { icon: "Phone", href: "https://wa.me/1233-242-4232" },
+      { icon: "Facebook", href: "https://www.facebook.com/qualityautocaremobile/" },
+      { icon: "Instagram", href: "https://www.instagram.com/qualityautocaremobile/#" },
+      { icon: "Phone", href: "https://wa.me/16233204623" },
     ],
     copyrightText: `© ${currentYear} Quality Auto Care. All rights reserved.`,
   };

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Phone, Mail, Clock, Facebook, Instagram, LucideIcon } from "lucide-react";
+import { Phone, Mail, Clock, Facebook, Instagram, MessageCircle, LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { getContactData } from "@/Data/contact-data";
 import { ContactData } from "@/Types/contact-types";
@@ -16,7 +16,7 @@ const contactIcons: { [key: string]: LucideIcon } = {
 const socialIcons: { [key: string]: LucideIcon } = {
   Facebook: Facebook,
   Instagram: Instagram,
-  Phone: Phone,
+  Phone: MessageCircle,
 };
 
 const ContactSection = () => {
@@ -157,7 +157,17 @@ const ContactSection = () => {
                         {info.title}
                       </h3>
                       <p className="theme-text-secondary whitespace-pre-line">
-                        {info.description}
+                        {info.iconName === "Mail" ? (
+                          <a href={`mailto:${info.description}`} className="hover:text-blue-400">
+                            {info.description}
+                          </a>
+                        ) : info.iconName === "Phone" ? (
+                          <a href={`tel:${info.description}`} className="hover:text-blue-400">
+                            {info.description}
+                          </a>
+                        ) : (
+                          info.description
+                        )}
                       </p>
                     </div>
                   </motion.div>

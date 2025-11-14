@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
+import { Facebook, Instagram, Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 
 
 import { getFooterData } from "@/Data/footer-data";
@@ -12,7 +12,7 @@ import { FooterData } from "@/Types/footer-types";
 const socialIcons = {
   Facebook: Facebook,
   Instagram: Instagram,
-  Phone: Phone,
+  Phone: MessageCircle,
   Mail: Mail,
   MapPin: MapPin,
 };
@@ -87,10 +87,10 @@ const Footer = () => {
               <MapPin size={16} /> {contactInfo.address}
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={16} /> {contactInfo.phone}
+              <Phone size={16} /> <a href={`tel:${contactInfo.phone}`} className="hover:text-blue-400">{contactInfo.phone}</a>
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={16} /> {contactInfo.email}
+              <Mail size={16} /> <a href={`mailto:${contactInfo.email}`} className="hover:text-blue-400">{contactInfo.email}</a>
             </li>
           </ul>
           <div className="flex space-x-4 mt-4">
@@ -101,6 +101,8 @@ const Footer = () => {
                 <Link
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="theme-button-accent w-9 h-9 flex items-center justify-center rounded-full"
                 >
                   <IconComponent size={18} />

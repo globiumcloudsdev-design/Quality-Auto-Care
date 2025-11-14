@@ -22,17 +22,17 @@ export const getContactData = () => {
     socialLinks: [
       {
         iconName: "Facebook",
-        href: "https://www.facebook.com/qualityautocaremobile",
+        href: "https://www.facebook.com/qualityautocaremobile/",
         colorClass: "bg-blue-600 hover:bg-blue-700",
       },
       {
         iconName: "Instagram",
-        href: "https://www.instagram.com/qualityautocaremobile",
+        href: "https://www.instagram.com/qualityautocaremobile/#",
         colorClass: "bg-pink-600 hover:bg-pink-700",
       },
       {
         iconName: "Phone",
-        href: "https://wa.me/1233-242-4232",
+        href: "https://wa.me/16233204623",
         colorClass: "bg-green-600 hover:bg-green-700",
       },
     ],
