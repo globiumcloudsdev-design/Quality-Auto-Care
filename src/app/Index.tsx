@@ -38,6 +38,27 @@ const Index: React.FC = () => {
   const [promoData, setPromoData] = useState<PromoData | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.innerHTML = `
+      window.$crisp = [];
+      window.CRISP_WEBSITE_ID = "fd92126f-e479-46d6-a020-a53b58778937";
+      (function() {
+        d = document;
+        s = d.createElement("script");
+        s.src = "https://client.crisp.chat/l.js";
+        s.async = 1;
+        d.getElementsByTagName("head")[0].appendChild(s);
+      })();
+    `;
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   // ✅ On mount, check if user already closed or claimed the modal
   useEffect(() => {
     const claimed = localStorage.getItem("promo_claimed") === "true";

@@ -32,6 +32,27 @@ const Gallery: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.innerHTML = `
+      window.$crisp = [];
+      window.CRISP_WEBSITE_ID = "fd92126f-e479-46d6-a020-a53b58778937";
+      (function() {
+        d = document;
+        s = d.createElement("script");
+        s.src = "https://client.crisp.chat/l.js";
+        s.async = 1;
+        d.getElementsByTagName("head")[0].appendChild(s);
+      })();
+    `;
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   const filteredImages: GalleryImage[] =
     selectedCategory === "all"
       ? (galleryImages as GalleryImage[])
