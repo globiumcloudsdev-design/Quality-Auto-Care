@@ -19,11 +19,11 @@ export interface BookNowLink {
 
 export interface CompanyInfo {
   logo: StaticImageData;
-  name: string;
-  tagline: string;
+  name?: string;
+  tagline?: string;
   phone: string;
-  location: string;
-  workingHours: string;
+  location?: string;
+  workingHours?: string;
 }
 
 export interface NavbarData {

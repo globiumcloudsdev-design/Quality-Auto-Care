@@ -47,15 +47,15 @@ const Navbar = () => {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Phone className="w-4 h-4" />
-              <span>{companyInfo.phone}</span>
+              <a href={`tel:${companyInfo.phone}`} className="hover:text-blue-400">{companyInfo.phone}</a>
             </div>
             <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4" />
+              {/* <MapPin className="w-4 h-4" /> */}
               <span>{companyInfo.location}</span>
             </div>
           </div>
           <div className="hidden sm:flex items-center space-x-2">
-            <Clock className="w-4 h-4" />
+            {/* <Clock className="w-4 h-4" /> */}
             <span>{companyInfo.workingHours}</span>
           </div>
         </div>
@@ -77,11 +77,11 @@ const Navbar = () => {
             <Link href="/" className="flex items-center gap-3">
               <Image
                 src={companyInfo.logo}
-                alt={companyInfo.name}
+                alt={companyInfo.name || "Company Logo"}
                 width={isScrolled ? 40 : 45}
                 height={isScrolled ? 40 : 45}
                 className="rounded-lg transition-all duration-300"
-                priority
+                // priority
               />
               <div>
                 <h1
@@ -96,7 +96,7 @@ const Navbar = () => {
                     isScrolled ? "opacity-75" : "opacity-100"
                   }`}
                 >
-                  {companyInfo.tagline}
+                  {/* {companyInfo.tagline} */}
                 </p>
               </div>
             </Link>

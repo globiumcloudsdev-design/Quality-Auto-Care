@@ -6,7 +6,7 @@ export const getContactData = () => {
       {
         iconName: "Phone",
         title: "Phone",
-        description: "Available Monday-Saturday, 8am-5pm",
+        description: "+1 (623) 320-4623)",
       },
       {
         iconName: "Mail",
@@ -16,7 +16,7 @@ export const getContactData = () => {
       {
         iconName: "Clock",
         title: "Business Hours",
-        description: "Mon-Sat: 8am-5pm\nSunday: Closed",
+        description: "Mon-Sat: 9am-5pm\nSunday: Closed",
       },
     ],
     socialLinks: [

@@ -39,36 +39,36 @@ export const galleryImages = [
     title: 'Showroom Shine',
     size: 'small'
   },
+  // {
+  //   id: 5,
+  //   src: windowTint,
+  //   category: 'window-tint',
+  //   title: 'Window Tinting',
+  //   size: 'medium'
+  // },
   {
     id: 5,
-    src: windowTint,
-    category: 'window-tint',
-    title: 'Window Tinting',
-    size: 'medium'
-  },
-  {
-    id: 6,
     src: ceramicImage,
     category: 'ceramic',
     title: 'Ceramic Coating',
     size: 'large'
   },
   {
-    id: 7,
+    id: 6,
     src: exteriorWash,
     category: 'exterior',
     title: 'Exterior Wash',
     size: 'small'
   },
   {
-    id: 8,
+    id: 7,
     src: leatherImage,
     category: 'interior',
     title: 'Leather Treatment',
     size: 'medium'
   },
   {
-    id: 9,
+    id: 8,
     src: serviceimage1,
     category: 'ceramic',
     title: 'Paint Protection',

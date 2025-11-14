@@ -114,7 +114,6 @@ const Gallery: React.FC = () => {
                 { key: "exterior", label: "Exterior Detailing" },
                 { key: "interior", label: "Interior Detailing" },
                 { key: "ceramic", label: "Ceramic Coating" },
-                { key: "window-tint", label: "Window Tinting" },
               ].map((cat) => (
                 <button
                   key={cat.key}

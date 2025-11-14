@@ -4,11 +4,11 @@ export const getNavbarData = () => {
   return {
     companyInfo: {
       logo: logo,
-      name: "Quality Auto Care",
-      tagline: "Mobile Care",
-      phone: "+1233-242-4232",
-      location: "Ohio, USA",
-      workingHours: "Mon-Sat: 8AM-5PM",
+      // name: "Quality Auto Care",
+      // tagline: "Mobile Care",
+      phone: "+1 (623) 320-4623",
+      // location: "Ohio, USA",
+      // workingHours: "Mon-Sat: 8AM-5PM",
     },
     navigationLinks: [
       { name: "Home", href: "/" },
