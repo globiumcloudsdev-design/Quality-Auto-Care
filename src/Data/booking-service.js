@@ -15,7 +15,7 @@ export const serviceTypes = [
           {
             id: "sedan-basic-full",
             name: "Basic Full Package",
-            price: 200,
+            price: 199,
             description: "Basic interior and exterior package for sedans",
             pricingType: "fixed",
             includes: ["Basic Interior Package", "Basic Exterior Package"]
@@ -23,7 +23,7 @@ export const serviceTypes = [
           {
             id: "sedan-premium-full",
             name: "Premium Full Package",
-            price: 270,
+            price: 269,
             description: "Premium interior and exterior package for sedans",
             pricingType: "fixed",
             includes: ["Premium Interior Package", "Premium Exterior Package"]
@@ -31,7 +31,7 @@ export const serviceTypes = [
           {
             id: "sedan-basic-interior",
             name: "Basic Interior Only",
-            price: 160,
+            price: 159,
             description: "Basic interior package only (sedan)",
             pricingType: "fixed",
             includes: ["Basic Interior Package"]
@@ -39,7 +39,7 @@ export const serviceTypes = [
           {
             id: "sedan-premium-interior",
             name: "Premium Interior Only",
-            price: 200,
+            price: 199,
             description: "Premium interior package only (sedan)",
             pricingType: "fixed",
             includes: ["Premium Interior Package"]
@@ -47,7 +47,7 @@ export const serviceTypes = [
           {
             id: "sedan-basic-exterior",
             name: "Basic Exterior Only",
-            price: 150,
+            price: 149,
             description: "Basic exterior package only (sedan)",
             pricingType: "fixed",
             includes: ["Basic Exterior Package"]
@@ -55,16 +55,16 @@ export const serviceTypes = [
           {
             id: "sedan-premium-exterior",
             name: "Premium Exterior Only",
-            price: 180,
+            price: 179,
             description: "Premium exterior package only (sedan)",
             pricingType: "fixed",
             includes: ["Premium Exterior Package"]
           }
         ],
         additionalServices: [
-          { id: "sedan-pet-hair", name: "Pet Hair Removal", price: 20, description: "Remove embedded pet hair (sedan)" },
-          { id: "sedan-odor-elimination", name: "Odor Elimination", price: 30, description: "Neutralize odors (sedan)" },
-          { id: "sedan-headlight-restoration", name: "Headlight Restoration", price: 40, description: "Restore headlights (sedan)" }
+          { id: "sedan-pet-hair", name: "Pet Hair Removal", price: 19, description: "Remove embedded pet hair (sedan)" },
+          { id: "sedan-odor-elimination", name: "Odor Elimination", price: 29, description: "Neutralize odors (sedan)" },
+          { id: "sedan-headlight-restoration", name: "Headlight Restoration", price: 39, description: "Restore headlights (sedan)" }
         ]
       },
       {
@@ -75,7 +75,7 @@ export const serviceTypes = [
           {
             id: "suv-basic-full",
             name: "Basic Full Package",
-            price: 240,
+            price: 239,
             description: "Basic interior and exterior package for SUVs",
             pricingType: "fixed",
             includes: ["Basic Interior Package", "Basic Exterior Package"]
@@ -83,7 +83,7 @@ export const serviceTypes = [
           {
             id: "suv-premium-full",
             name: "Premium Full Package",
-            price: 330,
+            price: 319,
             description: "Premium interior and exterior package for SUVs",
             pricingType: "fixed",
             includes: ["Premium Interior Package", "Premium Exterior Package"]
@@ -91,7 +91,7 @@ export const serviceTypes = [
           {
             id: "suv-basic-interior",
             name: "Basic Interior Only",
-            price: 200,
+            price: 199,
             description: "Basic interior package only (SUV)",
             pricingType: "fixed",
             includes: ["Basic Interior Package"]
@@ -99,7 +99,7 @@ export const serviceTypes = [
           {
             id: "suv-premium-interior",
             name: "Premium Interior Only",
-            price: 250,
+            price: 249,
             description: "Premium interior package only (SUV)",
             pricingType: "fixed",
             includes: ["Premium Interior Package"]
@@ -107,7 +107,7 @@ export const serviceTypes = [
           {
             id: "suv-basic-exterior",
             name: "Basic Exterior Only",
-            price: 180,
+            price: 179,
             description: "Basic exterior package only (SUV)",
             pricingType: "fixed",
             includes: ["Basic Exterior Package"]
@@ -115,16 +115,16 @@ export const serviceTypes = [
           {
             id: "suv-premium-exterior",
             name: "Premium Exterior Only",
-            price: 210,
+            price: 209,
             description: "Premium exterior package only (SUV)",
             pricingType: "fixed",
             includes: ["Premium Exterior Package"]
           }
         ],
         additionalServices: [
-          { id: "suv-pet-hair", name: "Pet Hair Removal", price: 30, description: "Remove embedded pet hair (SUV)" },
-          { id: "suv-odor-elimination", name: "Odor Elimination", price: 40, description: "Neutralize odors (SUV)" },
-          { id: "suv-headlight-restoration", name: "Headlight Restoration", price: 50, description: "Restore headlights (SUV)" }
+          { id: "suv-pet-hair", name: "Pet Hair Removal", price: 29, description: "Remove embedded pet hair (SUV)" },
+          { id: "suv-odor-elimination", name: "Odor Elimination", price: 39, description: "Neutralize odors (SUV)" },
+          { id: "suv-headlight-restoration", name: "Headlight Restoration", price: 49, description: "Restore headlights (SUV)" }
         ]
       },
       {
@@ -135,7 +135,7 @@ export const serviceTypes = [
           {
             id: "truck-basic-full",
             name: "Basic Full Package",
-            price: 260,
+            price: 259,
             description: "Basic interior and exterior package for trucks",
             pricingType: "fixed",
             includes: ["Basic Interior Package", "Basic Exterior Package"]
@@ -143,7 +143,7 @@ export const serviceTypes = [
           {
             id: "truck-premium-full",
             name: "Premium Full Package",
-            price: 350,
+            price: 349,
             description: "Premium interior and exterior package for trucks",
             pricingType: "fixed",
             includes: ["Premium Interior Package", "Premium Exterior Package"]
@@ -151,7 +151,7 @@ export const serviceTypes = [
           {
             id: "truck-basic-interior",
             name: "Basic Interior Only",
-            price: 210,
+            price: 209,
             description: "Basic interior package only (truck)",
             pricingType: "fixed",
             includes: ["Basic Interior Package"]
@@ -159,7 +159,7 @@ export const serviceTypes = [
           {
             id: "truck-premium-interior",
             name: "Premium Interior Only",
-            price: 260,
+            price: 259,
             description: "Premium interior package only (truck)",
             pricingType: "fixed",
             includes: ["Premium Interior Package"]
@@ -167,7 +167,7 @@ export const serviceTypes = [
           {
             id: "truck-basic-exterior",
             name: "Basic Exterior Only",
-            price: 200,
+            price: 199,
             description: "Basic exterior package only (truck)",
             pricingType: "fixed",
             includes: ["Basic Exterior Package"]
@@ -175,16 +175,16 @@ export const serviceTypes = [
           {
             id: "truck-premium-exterior",
             name: "Premium Exterior Only",
-            price: 240,
+            price: 239,
             description: "Premium exterior package only (truck)",
             pricingType: "fixed",
             includes: ["Premium Exterior Package"]
           }
         ],
         additionalServices: [
-          { id: "truck-pet-hair", name: "Pet Hair Removal", price: 35, description: "Remove embedded pet hair (truck)" },
-          { id: "truck-odor-elimination", name: "Odor Elimination", price: 45, description: "Neutralize odors (truck)" },
-          { id: "truck-headlight-restoration", name: "Headlight Restoration", price: 55, description: "Restore headlights (truck)" }
+          { id: "truck-pet-hair", name: "Pet Hair Removal", price: 34, description: "Remove embedded pet hair (truck)" },
+          { id: "truck-odor-elimination", name: "Odor Elimination", price: 44, description: "Neutralize odors (truck)" },
+          { id: "truck-headlight-restoration", name: "Headlight Restoration", price: 54, description: "Restore headlights (truck)" }
         ]
       },
       {
@@ -195,7 +195,7 @@ export const serviceTypes = [
           {
             id: "van-basic-full",
             name: "Basic Full Package",
-            price: 230,
+            price: 229,
             description: "Basic interior and exterior package for vans",
             pricingType: "fixed",
             includes: ["Basic Interior Package", "Basic Exterior Package"]
@@ -203,7 +203,7 @@ export const serviceTypes = [
           {
             id: "van-premium-full",
             name: "Premium Full Package",
-            price: 320,
+            price: 319,
             description: "Premium interior and exterior package for vans",
             pricingType: "fixed",
             includes: ["Premium Interior Package", "Premium Exterior Package"]
@@ -211,7 +211,7 @@ export const serviceTypes = [
           {
             id: "van-basic-interior",
             name: "Basic Interior Only",
-            price: 190,
+            price: 189,
             description: "Basic interior package only (van)",
             pricingType: "fixed",
             includes: ["Basic Interior Package"]
@@ -219,7 +219,7 @@ export const serviceTypes = [
           {
             id: "van-premium-interior",
             name: "Premium Interior Only",
-            price: 230,
+            price: 229,
             description: "Premium interior package only (van)",
             pricingType: "fixed",
             includes: ["Premium Interior Package"]
@@ -227,7 +227,7 @@ export const serviceTypes = [
           {
             id: "van-basic-exterior",
             name: "Basic Exterior Only",
-            price: 170,
+            price: 169,
             description: "Basic exterior package only (van)",
             pricingType: "fixed",
             includes: ["Basic Exterior Package"]
@@ -235,7 +235,7 @@ export const serviceTypes = [
           {
             id: "van-premium-exterior",
             name: "Premium Exterior Only",
-            price: 205,
+            price: 239,
             description: "Premium exterior package only (van)",
             pricingType: "fixed",
             includes: ["Premium Exterior Package"]
@@ -280,8 +280,8 @@ export const serviceTypes = [
       }
     ],
     additionalServices: [
-      { id: "boat-uv-protection", name: "UV Protection Coating", price: 150, description: "Premium UV protection for marine environment" },
-      { id: "boat-mildew-treatment", name: "Mildew Treatment", price: 75, description: "Anti-mildew treatment for marine conditions" }
+      { id: "boat-uv-protection", name: "UV Protection Coating", price: 149, description: "Premium UV protection for marine environment" },
+      { id: "boat-mildew-treatment", name: "Mildew Treatment", price: 74, description: "Anti-mildew treatment for marine conditions" }
     ]
   },
   {
@@ -299,7 +299,7 @@ export const serviceTypes = [
       }
     ],
     additionalServices: [
-      { id: "jet-ski-rust-protection", name: "Rust Protection", price: 60, description: "Anti-rust treatment for saltwater protection" }
+      { id: "jet-ski-rust-protection", name: "Rust Protection", price: 59, description: "Anti-rust treatment for saltwater protection" }
     ]
   },
   {
@@ -310,7 +310,7 @@ export const serviceTypes = [
       {
         id: "rv-full",
         name: "Full RV Service",
-        price: 40,
+        price: 39,
         description: "Complete RV interior and exterior detailing",
         pricingType: "perFoot",
         includes: ["RV Interior Services", "RV Exterior Services"]
@@ -333,8 +333,8 @@ export const serviceTypes = [
       }
     ],
     additionalServices: [
-      { id: "rv-roof-treatment", name: "Roof Sealant Treatment", price: 120, description: "Professional roof sealing and protection" },
-      { id: "rv-tank-cleaning", name: "Water Tank Cleaning", price: 80, description: "Fresh water tank cleaning and sanitization" }
+      { id: "rv-roof-treatment", name: "Roof Sealant Treatment", price: 119, description: "Professional roof sealing and protection" },
+      { id: "rv-tank-cleaning", name: "Water Tank Cleaning", price: 79, description: "Fresh water tank cleaning and sanitization" }
     ]
   },
   {
@@ -345,15 +345,15 @@ export const serviceTypes = [
       {
         id: "bike-full",
         name: "Full Bike Detailing",
-        price: 170,
+        price: 169,
         description: "Complete motorcycle detailing package",
         pricingType: "fixed",
         includes: ["Bike Exterior Services", "Bike Detailing & Protection"]
       }
     ],
     additionalServices: [
-      { id: "bike-chain-service", name: "Chain Service", price: 30, description: "Complete chain cleaning and lubrication" },
-      { id: "bike-chrome-polish", name: "Chrome Polish", price: 45, description: "Premium chrome polishing and protection" }
+      { id: "bike-chain-service", name: "Chain Service", price: 29, description: "Complete chain cleaning and lubrication" },
+      { id: "bike-chrome-polish", name: "Chrome Polish", price: 44, description: "Premium chrome polishing and protection" }
     ]
   }
 ];
