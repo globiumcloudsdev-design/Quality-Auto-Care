@@ -913,8 +913,8 @@ const BookingForm = () => {
     const [promoCode, setPromoCode] = useState("");
     const [isPromoValid, setIsPromoValid] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
-    const [promoCodes, setPromoCodes] = useState<Promo[]>([]);
     const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+    const [promoCodes, setPromoCodes] = useState<Promo[]>([]);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingId, setBookingId] = useState("");
@@ -1002,12 +1002,12 @@ const resetForm = () => {
         }
     }, [formData.city, formData.state, isManualState]);
 
-    // Fetch promo codes from API on mount
+    // Fetch promo codes from external API on mount
     useEffect(() => {
         const fetchPromoCodes = async () => {
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/agent/${process.env.NEXT_PUBLIC_AGENT_ID}`,
+                    `https://gc-web-app.vercel.app/api/promo-codes/agent/690b5b3d70d70cbde2a59f88`,
                     { cache: "no-store" }
                 );
 
@@ -1036,7 +1036,7 @@ const resetForm = () => {
                         setDiscountPercent(promo.discountPercentage);
                         setIsPromoValid(true);
                         toast.success(`Promo code ${promo.promoCode} applied automatically!`);
-                        
+
                         localStorage.removeItem("discount_claimed");
                         sessionStorage.removeItem("auto_apply_promo");
                     }
@@ -1198,116 +1198,119 @@ const addVehicleBooking = () => {
         updateForm({ date: date ? date.toISOString() : "" });
     };
 
-    // Validate promo code
-    const validatePromoCode = async (code: string): Promise<ValidateResponse> => {
-        if (!code.trim()) {
-            toast.error("Please enter a promo code");
-            return { success: false, valid: false, message: "Promo code is required" };
-        }
+const validatePromoCode = async (code: string) => {
+  const cleanedPromoCode = code.trim().toUpperCase();
 
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/validate`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ promoCode: code.trim() }),
-                }
-            );
+  // ---------- FRONTEND VALIDATION ----------
+  if (!cleanedPromoCode) {
+    toast.error("Please enter a promo code.");
+    return;
+  }
 
-            const data: ValidateResponse = await response.json();
+  if (cleanedPromoCode.length < 3) {
+    toast.error("Promo code must be at least 3 characters.");
+    return;
+  }
 
-            if (response.ok && data.valid) {
-                toast.success("Promo code is valid!");
-            } else {
-                toast.error(data.message || "Invalid promo code");
-            }
+  if (!/^[A-Z0-9]+$/.test(cleanedPromoCode)) {
+    toast.error("Promo code can only contain letters and numbers.");
+    return;
+  }
 
-            return data;
-        } catch (error) {
-            console.error("Promo validation error:", error);
-            toast.error("Error validating promo code");
-            return { success: false, valid: false, message: "Error validating promo code" };
-        }
-    };
+  try {
+    // ---------- CALL EXTERNAL VALIDATE API ----------
+    const validateResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/validate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promoCode: cleanedPromoCode })
+      }
+    );
 
-    // Apply promo code
-    const applyPromoCode = async (code: string, amount: number): Promise<ApplyResponse> => {
-        if (!code.trim() || !amount) {
-            toast.error("Promo code and amount are required");
-            return { success: false, message: "Invalid input" };
-        }
+    // Prevent JSON crash
+    let validateResult;
+    try {
+      validateResult = await validateResponse.json();
+    } catch {
+      toast.error("Server error. Please try again.");
+      return;
+    }
 
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/apply`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ promoCode: code.trim(), amount }),
-                }
-            );
+    console.log("VALIDATE RESULT:", validateResult);
 
-            const data: ApplyResponse = await response.json();
+    if (!validateResult.success || !validateResult.valid) {
+      toast.error(validateResult.message || "Invalid promo code");
+      setIsPromoValid(false);
+      setDiscountPercent(0);
+      setPromoCode("");
+      return;
+    }
 
-            if (response.ok && data.success) {
-                toast.success(
-                    `Promo Applied! You got ${data.data?.discountPercentage}% off!`
-                );
-            } else {
-                toast.error(data.message || "Failed to apply promo code");
-            }
+    // ---------- CALL EXTERNAL APPLY API ----------
+    const applyResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/apply`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          promoCode: cleanedPromoCode,
+          amount: totalPrice
+        })
+      }
+    );
 
-            return data;
-        } catch (error) {
-            console.error("Promo apply error:", error);
-            toast.error("Error applying promo code. Please try again.");
-            return { success: false, message: "Error applying promo code" };
-        }
-    };
+    const applyResult = await applyResponse.json();
+    console.log("APPLY RESULT:", applyResult);
 
-    // Handle promo code application
-    const handleApplyPromo = async () => {
-        const cleanedPromoCode = promoCode.replace(/\s/g, '').toUpperCase();
-        setPromoCode(cleanedPromoCode);
+    if (!applyResult.success) {
+      toast.error(applyResult.message || "Failed to apply promo.");
+      setIsPromoValid(false);
+      return;
+    }
 
-        if (!cleanedPromoCode) {
-            toast.error("Please enter a promo code");
-            return;
-        }
+    // ---------- APPLY SUCCESS ----------
+    setIsPromoValid(true);
+    setDiscountPercent(applyResult.data.discountPercentage || 0);
+    setPromoCode(cleanedPromoCode);
 
-        setIsCheckingPromo(true);
+    toast.success(
+      `${applyResult.data.discountPercentage || 0}% off promo code applied.`
+    );
 
-        try {
-            // Step 1: Validate promo code
-            const validateResult = await validatePromoCode(cleanedPromoCode);
+  } catch (error) {
+    console.error("Promo error:", error);
+    toast.error("Error applying promo code. Try again.");
+    setIsPromoValid(false);
+    setDiscountPercent(0);
+    setPromoCode("");
+  }
+};
 
-            if (!validateResult.valid) {
-                setIsPromoValid(false);
-                setDiscountPercent(0);
-                return;
-            }
 
-            // Step 2: Apply promo code
-            const applyResult = await applyPromoCode(cleanedPromoCode, totalPrice);
+const handleApplyPromo = async () => {
+  const cleanedPromoCode = promoCode.replace(/\s/g, "").toUpperCase();
+  setPromoCode(cleanedPromoCode);
 
-            if (applyResult.success && applyResult.data) {
-                setIsPromoValid(true);
-                setDiscountPercent(applyResult.data.discountPercentage);
-                setPromoCode(cleanedPromoCode);
-            } else {
-                setIsPromoValid(false);
-                setDiscountPercent(0);
-            }
-        } catch (error) {
-            console.error("Error applying promo:", error);
-            setIsPromoValid(false);
-            setDiscountPercent(0);
-            toast.error("Error applying promo code. Please try again.");
-        } finally {
-            setIsCheckingPromo(false);
-        }
-    };
+  if (!cleanedPromoCode) {
+    toast.error("Please enter a promo code");
+    return;
+  }
+
+  setIsCheckingPromo(true);
+
+  try {
+    await validatePromoCode(cleanedPromoCode);
+  } catch (error) {
+    console.error("Error applying promo:", error);
+    toast.error("Error applying promo code. Please try again.");
+    setIsPromoValid(false);
+    setDiscountPercent(0);
+  } finally {
+    setIsCheckingPromo(false);
+  }
+};
+
 
     // Remove promo code
     const removePromoCode = () => {
@@ -1323,6 +1326,54 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     if (!formData.email) {
         toast.error("Please fill all the required fields.");
+        setIsSubmitting(false);
+        return;
+    }
+
+    // Validate booking data before submission
+    try {
+        const validationResponse = await fetch('/api/booking/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                vehicles: formData.vehicleBookings.map(vehicle => ({
+                    vehicleType: vehicle.vehicleType,
+                    vehicleMake: vehicle.vehicleMake,
+                    vehicleModel: vehicle.vehicleModel,
+                    vehicleYear: vehicle.vehicleYear,
+                    vehicleColor: vehicle.vehicleColor,
+                    vehicleSize: vehicle.vehicleLength || '',
+                    serviceType: vehicle.serviceType,
+                    selectedPackages: vehicle.package ? [{ category: vehicle.serviceType, package: vehicle.package }] : [],
+                    additionalServices: vehicle.additionalServices,
+                })),
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state,
+                zip: formData.zip,
+                date: formData.date,
+                timeSlot: formData.timeSlot,
+                notes: formData.notes,
+            }),
+        });
+
+        const validationResult = await validationResponse.json();
+
+        if (!validationResult.success || !validationResult.valid) {
+            const errorMessages = validationResult.errors?.map((err: any) => `${err.field}: ${err.message}`).join('\n') || 'Validation failed';
+            toast.error(`Please fix the following errors:\n${errorMessages}`);
+            setIsSubmitting(false);
+            return;
+        }
+
+        toast.success("Booking data validated successfully!");
+    } catch (error) {
+        console.error('Validation error:', error);
+        toast.error("Failed to validate booking data. Please try again.");
         setIsSubmitting(false);
         return;
     }
@@ -1713,48 +1764,83 @@ const handleSubmit = async (e: React.FormEvent) => {
                                         </div>
 
                                         {/* Promo Code Section */}
-                                        <div>
-                                            <label className="block text-sm font-medium mb-2">Promo Code (Optional)</label>
-                                            {isPromoValid ? (
-                                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center space-x-2">
-                                                            <Check className="h-5 w-5 text-green-600" />
-                                                            <span className="font-medium text-green-800">Discount Applied!</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="text-green-600 font-bold">{discountPercent}% OFF</span>
-                                                            <Button
-                                                                type="button"
-                                                                onClick={removePromoCode}
-                                                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
-                                                            >
-                                                                Remove
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-green-700 mt-1">Promo code: {promoCode}</p>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center space-x-2">
-                                                    <Input
-                                                        type="text"
-                                                        placeholder="Enter Promo Code"
-                                                        value={promoCode}
-                                                        onChange={(e) => setPromoCode(e.target.value)}
-                                                        className="bg-white flex-1"
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        onClick={handleApplyPromo}
-                                                        disabled={isCheckingPromo || !promoCode.trim()}
-                                                        className={`theme-button-accent whitespace-nowrap ${(isCheckingPromo || !promoCode.trim()) ? "opacity-50 cursor-not-allowed" : ""}`}
-                                                    >
-                                                        {isCheckingPromo ? "Checking..." : "Apply"}
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
+<div>
+  <label className="block text-sm font-medium mb-2">
+    Promo Code (Optional)
+  </label>
+
+  {isPromoValid ? (
+    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Check className="h-5 w-5 text-green-600" />
+          <span className="font-medium text-green-800">
+            Discount Applied!
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-green-600 font-bold">
+            {discountPercent}% OFF
+          </span>
+          <Button
+            type="button"
+            onClick={removePromoCode}
+            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
+
+      <p className="text-sm text-green-700 mt-1">
+        Promo code: {promoCode}
+      </p>
+    </div>
+  ) : (
+    <div className="flex items-center space-x-2">
+      <Input
+        type="text"
+        placeholder="Enter Promo Code"
+        value={promoCode}
+        onChange={(e) => {
+          // Auto uppercase + allow only A-Z / 0-9
+          const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+          setPromoCode(value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && promoCode.trim() && !isCheckingPromo) {
+            handleApplyPromo();
+          }
+        }}
+        className={`bg-white flex-1 ${
+          promoCode.length > 0 && promoCode.length < 3
+            ? "border-red-500"
+            : "border-gray-300"
+        }`}
+      />
+
+      <Button
+        type="button"
+        onClick={handleApplyPromo}
+        disabled={
+          isCheckingPromo ||
+          !promoCode.trim() ||
+          promoCode.length < 3
+        }
+        className={`theme-button-accent whitespace-nowrap ${
+          isCheckingPromo ||
+          !promoCode.trim() ||
+          promoCode.length < 3
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
+      >
+        {isCheckingPromo ? "Checking..." : "Apply"}
+      </Button>
+    </div>
+  )}
+</div>
+
 
                                         {/* Order Summary */}
                                         <OrderSummary

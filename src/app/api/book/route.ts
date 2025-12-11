@@ -66,9 +66,9 @@ export async function POST(req: Request) {
         }));
 
         const bookingData = {
-          bookingId: `DAD-${Date.now()}`,
-          webName: "Decent Auto Detailing",
-          vendorName: "Decent Auto Detailing",
+          bookingId: `QAC-${Date.now()}`,
+          webName: "Quality Auto Care",
+          vendorName: "Quality Auto Care",
           bookingType: "vehicle",
           formData: {
             vehicleBookings,
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
           status: "pending",
         };
 
-        console.log("Sending booking data to dashboard:", JSON.stringify(bookingData, null, 2));
+        // console.log("Sending booking data to dashboard:", JSON.stringify(bookingData, null, 2));
 
         const dashboardResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/booking`, {
           method: "POST",
