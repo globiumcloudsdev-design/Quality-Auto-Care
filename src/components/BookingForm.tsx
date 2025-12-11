@@ -19,9 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import {
     serviceTypes,
-    vehicleTypes,
     timeSlots,
-    mainServices
 } from "@/Data/booking-service";
 import { cityStateMapping } from "@/utils/usStates";
 import {
@@ -75,25 +73,45 @@ interface ServiceType {
     additionalServices?: AdditionalService[];
 }
 
-interface MainService {
-    id: string;
-    name: string;
-    description: string;
-}
-
 interface Promo {
-    isActive: boolean;
-    createdAt: string;
-    discountPercentage: number;
     promoCode: string;
+    isActive: boolean;
+    discountPercentage: number;
+    createdAt: string | Date;
+    validUntil?: string | Date;
+    maxUsage?: number;
+    usedCount?: number;
 }
 
-// Single Vehicle Booking Interface - UPDATED
+interface ApplyResponse {
+    success: boolean;
+    message: string;
+    data?: {
+        originalAmount: number;
+        discountPercentage: number;
+        discountAmount: number;
+        finalAmount: number;
+        promoCode: string;
+        promoCodeId: string;
+        agentInfo: any;
+        remainingUsage?: number | null;
+        promoDetails?: Promo;
+    };
+}
+
+interface ValidateResponse {
+    success: boolean;
+    valid: boolean;
+    message: string;
+    data?: Promo;
+}
+
+// Single Vehicle Booking Interface - FIXED
 interface VehicleBooking {
     id: string;
     serviceType: string;
     variant?: string;
-    mainService: string; // ✅ ADDED mainService field
+    mainService: { id: string; name: string }; // ✅ Object, not string
     package: string;
     additionalServices: string[];
     vehicleType: string;
@@ -255,25 +273,6 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
     );
 };
 
-// Helper function to get service and package names
-const getServiceName = (serviceTypeId: string): string => {
-    const service = serviceTypes.find(s => s.id === serviceTypeId);
-    return service?.name || "Unknown Service";
-};
-
-const getPackageName = (serviceTypeId: string, packageId: string, variantId?: string): string => {
-    const service = serviceTypes.find(s => s.id === serviceTypeId);
-
-    if (service?.variants && variantId) {
-        const variant = service.variants.find(v => v.id === variantId);
-        const pkg = variant?.packages.find(p => p.id === packageId);
-        return pkg?.name || "Unknown Package";
-    } else {
-        const pkg = service?.packages?.find(p => p.id === packageId);
-        return pkg?.name || "Unknown Package";
-    }
-};
-
 /* ---------------------- ORDER SUMMARY ---------------------- */
 const OrderSummary = ({
     formData,
@@ -329,6 +328,9 @@ const OrderSummary = ({
                                 const service = getServiceTypeDetails(vehicle.serviceType);
                                 const pkg = getPackageDetails(vehicle.serviceType, vehicle.package, vehicle.variant);
                                 const showLength = isPerFootPricing(pkg) && vehicle.vehicleLength;
+                                const packagePrice = pkg ? parsePrice(pkg.price) : 0;
+                                const totalPackagePrice = showLength && vehicle.vehicleLength ? 
+                                    packagePrice * parseFloat(vehicle.vehicleLength) : packagePrice;
 
                                 return (
                                     <div key={vehicle.id} className="border-b pb-3 last:border-b-0">
@@ -347,8 +349,8 @@ const OrderSummary = ({
                                                 )}
                                             </div>
                                             <span className="text-right font-bold">
-                                                ${pkg?.price}
-                                                {showLength && ` × ${vehicle.vehicleLength}ft`}
+                                                ${totalPackagePrice.toFixed(2)}
+                                                {showLength && ` (${packagePrice} × ${vehicle.vehicleLength}ft)`}
                                             </span>
                                         </div>
 
@@ -371,7 +373,7 @@ const OrderSummary = ({
                                                         return (
                                                             <li key={i} className="flex justify-between">
                                                                 <span>{addService?.name}</span>
-                                                                <span>${addService?.price}</span>
+                                                                <span>${addService ? parsePrice(addService.price).toFixed(2) : '0.00'}</span>
                                                             </li>
                                                         );
                                                     })}
@@ -409,6 +411,24 @@ const OrderSummary = ({
 
 /* ---------------------- CONFIRMATION MODAL ---------------------- */
 const ConfirmationModal = ({ open, onClose, formData, total, bookingId }: ConfirmationModalProps) => {
+    const getServiceName = (serviceTypeId: string): string => {
+        const service = serviceTypes.find(s => s.id === serviceTypeId);
+        return service?.name || "Unknown Service";
+    };
+
+    const getPackageName = (serviceTypeId: string, packageId: string, variantId?: string): string => {
+        const service = serviceTypes.find(s => s.id === serviceTypeId);
+
+        if (service?.variants && variantId) {
+            const variant = service.variants.find(v => v.id === variantId);
+            const pkg = variant?.packages.find(p => p.id === packageId);
+            return pkg?.name || "Unknown Package";
+        } else {
+            const pkg = service?.packages?.find(p => p.id === packageId);
+            return pkg?.name || "Unknown Package";
+        }
+    };
+
     const getServiceDisplayName = (vehicle: VehicleBooking) => {
         return `${getServiceName(vehicle.serviceType)} - ${getPackageName(vehicle.serviceType, vehicle.package, vehicle.variant)}`;
     };
@@ -608,7 +628,7 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
         onUpdate({
             ...vehicle,
             serviceType: serviceTypeId,
-            mainService: serviceTypeId, // ✅ Now compatible with interface
+            mainService: { id: serviceTypeId, name: service?.name || "" }, // ✅ Object
             variant: undefined,
             package: "",
             additionalServices: [],
@@ -625,12 +645,14 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
         onUpdate({
             ...vehicle,
             variant: variantId,
-            mainService: selectedServiceType.id, // ✅ Now compatible with interface
+            mainService: { id: selectedServiceType.id, name: selectedServiceType.name }, // ✅ Object
             package: "",
             additionalServices: [],
             vehicleType: variant?.vehicleTypes[0] || ""
         });
     };
+
+
 
     const handlePackageSelect = (packageId: string) => {
         onUpdate({
@@ -701,7 +723,7 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2">
-                            Select Vehicle
+                            Select Service Type
                         </label>
                         <Select
                             value={vehicle.serviceType}
@@ -720,8 +742,8 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                         </Select>
                     </div>
 
-                    {/* Variant Selection */}
-                    {selectedServiceType?.variants && (
+                    {/* Variant Selection for Car service */}
+                    {selectedServiceType?.id === "car" && selectedServiceType?.variants && (
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Vehicle Type
@@ -757,11 +779,10 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                                         <div
                                             key={pkg.id}
                                             onClick={() => handlePackageSelect(pkg.id)}
-                                            className={`border rounded-lg p-3 cursor-pointer transition-all duration-200 ${
-                                                isSelected
+                                            className={`border rounded-lg p-3 cursor-pointer transition-all duration-200 ${isSelected
                                                     ? "border-blue-500 bg-blue-50 shadow-md"
                                                     : "border-gray-300 hover:border-blue-300 hover:shadow-sm"
-                                            }`}
+                                                }`}
                                         >
                                             <div className="flex justify-between items-start mb-1">
                                                 <span className="font-medium text-gray-900 text-sm">{pkg.name}</span>
@@ -828,8 +849,8 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                                 </div>
                             </div>
 
-                            {/* Vehicle Length for boats/RVs */}
-                            {(vehicle.vehicleType === 'boat' || vehicle.vehicleType === 'rv' || vehicle.vehicleType === 'jet-ski') && (
+                            {/* Vehicle Length for boats/RVs/Jet Ski */}
+                            {(selectedServiceType?.id === 'boat' || selectedServiceType?.id === 'rv' || selectedServiceType?.id === 'jet-ski') && (
                                 <div>
                                     <label className="block text-sm font-medium mb-1">
                                         Vehicle Length (feet)
@@ -839,8 +860,13 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
                                         onChange={(e) => handleVehicleInfoChange("vehicleLength", e.target.value)}
                                         placeholder="e.g., 24"
                                         type="number"
+                                        min="0"
+                                        step="0.1"
                                         className="bg-white text-sm"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        * Required for per-foot pricing
+                                    </p>
                                 </div>
                             )}
 
@@ -879,89 +905,63 @@ const VehicleBookingCard = ({ vehicle, index, onUpdate, onRemove, isLast }: Vehi
     );
 };
 
-/* ---------------------- MAIN BOOKING ---------------------- */
-const Booking = () => {
+/* ---------------------- MAIN BOOKING COMPONENT ---------------------- */
+const BookingForm = () => {
     const [step, setStep] = useState(1);
     const [date, setDate] = useState<Date | undefined>();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [promoCode, setPromoCode] = useState("");
     const [isPromoValid, setIsPromoValid] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
-    const [claimedDiscount, setClaimedDiscount] = useState<string | null>(null);
     const [promoCodes, setPromoCodes] = useState<Promo[]>([]);
-    const [discountMessage, setDiscountMessage] = useState("");
-
-  // Fetch promo codes from API on mount
-useEffect(() => {
-  const fetchPromoCodes = async () => {
-    try {
-      const response = await fetch(
-        // "https://gc-web-app.vercel.app/api/promo-codes/agent/690b5b3d70d70cbde2a59f88",
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/agent/${process.env.NEXT_PUBLIC_AGENT_ID}`,
-        { cache: "no-store" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch promo codes");
-      }
-
-      const result = await response.json();
-      console.log("Fetched promo data:", result);
-
-      // ✅ Handle both array and { data: [...] } response formats
-      const promos = Array.isArray(result) ? result : result.data || [];
-
-      // ✅ Keep only active promos
-      const activePromos = promos.filter((promo: Promo) => promo.isActive);
-
-      setPromoCodes(activePromos);
-    } catch (error) {
-      console.error("Error fetching promo codes:", error);
-    }
-  };
-
-  fetchPromoCodes();
-}, []);
-
-// ✅ Check and auto-apply claimed promo
-useEffect(() => {
-  if (promoCodes.length === 0) return; // Wait for promos to load
-
-  const claimed = localStorage.getItem("discount_claimed");
-  const autoApplyPromo = sessionStorage.getItem("auto_apply_promo");
-
-  if (claimed === "true" && autoApplyPromo) {
-    // Match promo (case-insensitive)
-    const promo = promoCodes.find(
-      (p: Promo) => p.promoCode?.toUpperCase() === autoApplyPromo.toUpperCase()
-    );
-
-    if (promo) {
-      setPromoCode(promo.promoCode);
-      setDiscountPercent(promo.discountPercentage);
-      setIsPromoValid(true);
-      toast.success(`Promo code ${promo.promoCode} applied automatically!`);
-    } else {
-      toast.error(`Promo code ${autoApplyPromo} is no longer valid.`);
-    }
-
-    // ✅ Clear stored values
-    localStorage.removeItem("discount_claimed");
-    sessionStorage.removeItem("auto_apply_promo");
-  }
-}, [promoCodes]);
-
+    const [isCheckingPromo, setIsCheckingPromo] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingId, setBookingId] = useState("");
     const [isManualState, setIsManualState] = useState(false);
 
-    const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormData>({
+    vehicleBookings: [{
+        id: `vehicle-${Date.now()}`,
+        serviceType: "",
+        variant: undefined,
+        mainService: { id: "", name: "" }, // ✅ Object, not string
+        package: "",
+        additionalServices: [],
+        vehicleType: "",
+        vehicleMake: "",
+        vehicleModel: "",
+        vehicleYear: "",
+        vehicleColor: "",
+        vehicleLength: ""
+    }],
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    date: "",
+    timeSlot: "",
+    notes: "",
+});
+
+    // Disable past dates and Sundays
+    const isDateDisabled = (date: Date) => {
+        const today = startOfDay(new Date());
+        return isBefore(date, today) || isSunday(date);
+    };
+
+    // Reset form function
+const resetForm = () => {
+    setFormData({
         vehicleBookings: [{
             id: `vehicle-${Date.now()}`,
             serviceType: "",
             variant: undefined,
-            mainService: "", // ✅ ADDED mainService field
+            mainService: { id: "", name: "" }, // ✅ Object
             package: "",
             additionalServices: [],
             vehicleType: "",
@@ -983,52 +983,16 @@ useEffect(() => {
         timeSlot: "",
         notes: "",
     });
+    setDate(undefined);
+    setPromoCode("");
+    setIsPromoValid(false);
+    setDiscountPercent(0);
+    setStep(1);
+    setBookingId("");
+    setIsManualState(false);
+};
 
-    // Disable past dates and Sundays
-    const isDateDisabled = (date: Date) => {
-        const today = startOfDay(new Date());
-        return isBefore(date, today) || isSunday(date);
-    };
-
-    // Reset form function
-    const resetForm = () => {
-        setFormData({
-            vehicleBookings: [{
-                id: `vehicle-${Date.now()}`,
-                serviceType: "",
-                variant: undefined,
-                mainService: "", // ✅ ADDED mainService field
-                package: "",
-                additionalServices: [],
-                vehicleType: "",
-                vehicleMake: "",
-                vehicleModel: "",
-                vehicleYear: "",
-                vehicleColor: "",
-                vehicleLength: ""
-            }],
-            firstName: "",
-            lastName: "",
-            email: "",
-            phone: "",
-            address: "",
-            city: "",
-            state: "",
-            zip: "",
-            date: "",
-            timeSlot: "",
-            notes: "",
-        });
-        setDate(undefined);
-        setPromoCode("");
-        setIsPromoValid(false);
-        setDiscountPercent(0);
-        setStep(1);
-        setBookingId("");
-        setIsManualState(false);
-    };
-
-    // Automatically set state when city is entered (only if not in manual mode)
+    // Automatically set state when city is entered
     useEffect(() => {
         if (formData.city.trim() && !isManualState) {
             const detectedState = cityStateMapping(formData.city);
@@ -1038,9 +1002,56 @@ useEffect(() => {
         }
     }, [formData.city, formData.state, isManualState]);
 
+    // Fetch promo codes from API on mount
+    useEffect(() => {
+        const fetchPromoCodes = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/agent/${process.env.NEXT_PUBLIC_AGENT_ID}`,
+                    { cache: "no-store" }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch promo codes");
+                }
+
+                const result = await response.json();
+                console.log("Fetched promo data:", result);
+
+                const promos = Array.isArray(result) ? result : result.data || [];
+                const activePromos = promos.filter((promo: Promo) => promo.isActive);
+                setPromoCodes(activePromos);
+
+                // Auto-apply claimed promo
+                const claimed = localStorage.getItem("discount_claimed");
+                const autoApplyPromo = sessionStorage.getItem("auto_apply_promo");
+
+                if (claimed === "true" && autoApplyPromo) {
+                    const promo = activePromos.find(
+                        (p: Promo) => p.promoCode?.toUpperCase() === autoApplyPromo.toUpperCase()
+                    );
+
+                    if (promo) {
+                        setPromoCode(promo.promoCode);
+                        setDiscountPercent(promo.discountPercentage);
+                        setIsPromoValid(true);
+                        toast.success(`Promo code ${promo.promoCode} applied automatically!`);
+                        
+                        localStorage.removeItem("discount_claimed");
+                        sessionStorage.removeItem("auto_apply_promo");
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching promo codes:", error);
+            }
+        };
+
+        fetchPromoCodes();
+    }, []);
+
     // Validation
-    const isStep1Valid = formData.vehicleBookings.length > 0 && 
-        formData.vehicleBookings.every(vehicle => 
+    const isStep1Valid = formData.vehicleBookings.length > 0 &&
+        formData.vehicleBookings.every(vehicle =>
             vehicle.serviceType && vehicle.package && vehicle.vehicleMake && vehicle.vehicleModel
         );
 
@@ -1058,7 +1069,9 @@ useEffect(() => {
         formData.timeSlot;
 
     // Pricing calculation
-    const parsePrice = (price: number | string) => typeof price === 'string' ? Number(price) || 0 : price;
+    const parsePrice = (price: number | string): number => {
+        return typeof price === 'string' ? Number(price) || 0 : price;
+    };
 
     const calculateTotalPrice = () => {
         let total = 0;
@@ -1141,33 +1154,33 @@ useEffect(() => {
         }
     };
 
-    // Vehicle booking management
-    const addVehicleBooking = () => {
-        const newVehicle: VehicleBooking = {
-            id: `vehicle-${Date.now()}`,
-            serviceType: "",
-            variant: undefined,
-            mainService: "", // ✅ ADDED mainService field
-            package: "",
-            additionalServices: [],
-            vehicleType: "",
-            vehicleMake: "",
-            vehicleModel: "",
-            vehicleYear: "",
-            vehicleColor: "",
-            vehicleLength: ""
-        };
-
-        setFormData(prev => ({
-            ...prev,
-            vehicleBookings: [...prev.vehicleBookings, newVehicle]
-        }));
+   // Vehicle booking management
+const addVehicleBooking = () => {
+    const newVehicle: VehicleBooking = {
+        id: `vehicle-${Date.now()}`,
+        serviceType: "",
+        variant: undefined,
+        mainService: { id: "", name: "" }, // ✅ Object, not string
+        package: "",
+        additionalServices: [],
+        vehicleType: "",
+        vehicleMake: "",
+        vehicleModel: "",
+        vehicleYear: "",
+        vehicleColor: "",
+        vehicleLength: ""
     };
+
+    setFormData(prev => ({
+        ...prev,
+        vehicleBookings: [...prev.vehicleBookings, newVehicle]
+    }));
+};
 
     const updateVehicleBooking = (index: number, updatedVehicle: VehicleBooking) => {
         setFormData(prev => ({
             ...prev,
-            vehicleBookings: prev.vehicleBookings.map((vehicle, i) => 
+            vehicleBookings: prev.vehicleBookings.map((vehicle, i) =>
                 i === index ? updatedVehicle : vehicle
             )
         }));
@@ -1185,149 +1198,246 @@ useEffect(() => {
         updateForm({ date: date ? date.toISOString() : "" });
     };
 
+    // Validate promo code
+    const validatePromoCode = async (code: string): Promise<ValidateResponse> => {
+        if (!code.trim()) {
+            toast.error("Please enter a promo code");
+            return { success: false, valid: false, message: "Promo code is required" };
+        }
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/validate`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ promoCode: code.trim() }),
+                }
+            );
+
+            const data: ValidateResponse = await response.json();
+
+            if (response.ok && data.valid) {
+                toast.success("Promo code is valid!");
+            } else {
+                toast.error(data.message || "Invalid promo code");
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Promo validation error:", error);
+            toast.error("Error validating promo code");
+            return { success: false, valid: false, message: "Error validating promo code" };
+        }
+    };
+
+    // Apply promo code
+    const applyPromoCode = async (code: string, amount: number): Promise<ApplyResponse> => {
+        if (!code.trim() || !amount) {
+            toast.error("Promo code and amount are required");
+            return { success: false, message: "Invalid input" };
+        }
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/apply`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ promoCode: code.trim(), amount }),
+                }
+            );
+
+            const data: ApplyResponse = await response.json();
+
+            if (response.ok && data.success) {
+                toast.success(
+                    `Promo Applied! You got ${data.data?.discountPercentage}% off!`
+                );
+            } else {
+                toast.error(data.message || "Failed to apply promo code");
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Promo apply error:", error);
+            toast.error("Error applying promo code. Please try again.");
+            return { success: false, message: "Error applying promo code" };
+        }
+    };
+
+    // Handle promo code application
     const handleApplyPromo = async () => {
         const cleanedPromoCode = promoCode.replace(/\s/g, '').toUpperCase();
         setPromoCode(cleanedPromoCode);
 
         if (!cleanedPromoCode) {
-            setDiscountMessage("Please enter a promo code");
             toast.error("Please enter a promo code");
             return;
         }
 
+        setIsCheckingPromo(true);
+
         try {
-  // ✅ First, validate the promo code
-  const validateResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/validate`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ promoCode: cleanedPromoCode }),
-    }
-  );
+            // Step 1: Validate promo code
+            const validateResult = await validatePromoCode(cleanedPromoCode);
 
-  const validateResult = await validateResponse.json();
-
-  if (!validateResult.success || !validateResult.valid) {
-    setIsPromoValid(false);
-    setDiscountPercent(0);
-    setDiscountMessage(validateResult.message || "Invalid promo code");
-    toast.error(validateResult.message || "Invalid promo code");
-    return;
-  }
-
-  // ✅ If valid, now apply the promo code with total amount
-  const applyResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/promo-codes/apply`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        promoCode: cleanedPromoCode,
-        amount: totalPrice,
-      }),
-    }
-  );
-
-  const applyResult = await applyResponse.json();
-
-  if (applyResult.success) {
-    setIsPromoValid(true);
-    setDiscountPercent(applyResult.data.discountPercentage);
-    setDiscountMessage(
-      `Promo Applied! You got ${applyResult.data.discountPercentage}% off!`
-    );
-    toast.success(
-      `Promo Applied! You got ${applyResult.data.discountPercentage}% off!`
-    );
-  } else {
-    setIsPromoValid(false);
-    setDiscountPercent(0);
-    setDiscountMessage(applyResult.message || "Failed to apply promo code");
-    toast.error(applyResult.message || "Failed to apply promo code");
-  }
-} catch (error) {
-  console.error("Error applying promo:", error);
-  setIsPromoValid(false);
-  setDiscountPercent(0);
-  setDiscountMessage("Error applying promo code. Please try again.");
-  toast.error("Error applying promo code. Please try again.");
-}
-
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!isStep3Valid) {
-            toast.error("Please complete all required fields.");
-            return;
-        }
-
-        if (date && isDateDisabled(date)) {
-            toast.error("Please select a valid future date (Sundays are closed)");
-            return;
-        }
-
-        const newBookingId = generateBookingId();
-        setBookingId(newBookingId);
-
-        setIsSubmitting(true);
-        try {
-            let finalPhone = formData.phone;
-            if (!formData.phone.startsWith('+1')) {
-                const digits = formData.phone.replace(/\D/g, '').slice(0, 10);
-                finalPhone = '+1' + digits;
+            if (!validateResult.valid) {
+                setIsPromoValid(false);
+                setDiscountPercent(0);
+                return;
             }
 
-            // Prepare data for API submission
-            const submissionData = {
-                bookingId: newBookingId,
-                webName: "Quality Auto Care Detailing", // Hardcoded as requested
-                formData: {
-                    ...formData,
-                    phone: finalPhone,
-                },
-                totalPrice: totalPrice,
-                discountedPrice: discountedPrice,
-                discountApplied: isPromoValid,
-                discountPercent: discountPercent,
-                promoCode: isPromoValid ? promoCode : null,
-                submittedAt: new Date().toISOString(),
-                vehicleCount: formData.vehicleBookings.length,
-                status: "pending"
-            };
+            // Step 2: Apply promo code
+            const applyResult = await applyPromoCode(cleanedPromoCode, totalPrice);
 
-            console.log("Booking Submission Data:", submissionData);
-
-            // API Call
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/booking`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(submissionData),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                setShowConfirmation(true);
-                toast.success("Booking Successful! Confirmation emails sent.");
+            if (applyResult.success && applyResult.data) {
+                setIsPromoValid(true);
+                setDiscountPercent(applyResult.data.discountPercentage);
+                setPromoCode(cleanedPromoCode);
             } else {
-                throw new Error(result.message || 'Failed to submit booking');
+                setIsPromoValid(false);
+                setDiscountPercent(0);
             }
-
         } catch (error) {
-            console.error('Booking submission error:', error);
-            toast.error("Submission Error. Please try again.");
+            console.error("Error applying promo:", error);
+            setIsPromoValid(false);
+            setDiscountPercent(0);
+            toast.error("Error applying promo code. Please try again.");
         } finally {
-            setIsSubmitting(false);
+            setIsCheckingPromo(false);
         }
     };
+
+    // Remove promo code
+    const removePromoCode = () => {
+        setIsPromoValid(false);
+        setDiscountPercent(0);
+        setPromoCode("");
+        toast.info("Promo code removed");
+    };
+
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (!formData.email) {
+        toast.error("Please fill all the required fields.");
+        setIsSubmitting(false);
+        return;
+    }
+
+    try {
+        // ✅ Phone number ko simple format mein rakho (no +1 formatting)
+        let finalPhone = formData.phone.replace(/\D/g, '');
+        
+        // ✅ Prepare vehicle bookings data
+        const vehicleBookingsData = formData.vehicleBookings.map(vehicle => {
+            const service = serviceTypes.find(s => s.id === vehicle.serviceType);
+            
+            let packageName = vehicle.package;
+            if (service?.variants && vehicle.variant) {
+                const variant = service.variants.find(v => v.id === vehicle.variant);
+                const pkg = variant?.packages.find(p => p.id === vehicle.package);
+                packageName = pkg?.name || vehicle.package;
+            } else {
+                const pkg = service?.packages?.find(p => p.id === vehicle.package);
+                packageName = pkg?.name || vehicle.package;
+            }
+
+            return {
+                id: vehicle.id,
+                serviceType: vehicle.serviceType,
+                variant: vehicle.variant || undefined,
+                mainService: vehicle.serviceType, // String ID
+                package: vehicle.package,
+                additionalServices: vehicle.additionalServices || [],
+                vehicleType: vehicle.vehicleType || "",
+                vehicleMake: vehicle.vehicleMake,
+                vehicleModel: vehicle.vehicleModel,
+                vehicleYear: vehicle.vehicleYear,
+                vehicleColor: vehicle.vehicleColor,
+                vehicleLength: vehicle.vehicleLength || undefined
+            };
+        });
+
+        // ✅ Prepare submission data according to OLD structure
+        const submissionData = {
+            // Customer info from formData
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: finalPhone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+            date: formData.date.split('T')[0], // Simple date format
+            timeSlot: formData.timeSlot,
+            notes: formData.notes || "",
+            
+            // Vehicle data
+            vehicles: vehicleBookingsData.map(vb => ({
+                vehicleType: vb.vehicleType,
+                vehicleMake: vb.vehicleMake,
+                vehicleModel: vb.vehicleModel,
+                vehicleYear: vb.vehicleYear,
+                vehicleColor: vb.vehicleColor,
+                vehicleSize: vb.vehicleLength || "",
+                serviceType: "detailing", // Default or from vb.serviceType
+                selectedPackages: [{ 
+                    category: vb.serviceType, 
+                    package: vb.package 
+                }],
+                additionalServices: vb.additionalServices
+            })),
+            
+            // Pricing
+            totalPrice: totalPrice,
+            discountedPrice: discountedPrice,
+            discountApplied: isPromoValid && discountPercent > 0,
+            discountPercent: discountPercent,
+            type: "booking",
+            
+            // Additional fields from old structure
+            extraService: "", // Add if needed
+            extraServiceLabel: null
+        };
+
+        console.log("✅ OLD STRUCTURE DATA:", JSON.stringify(submissionData, null, 2));
+
+        // ✅ Use the OLD endpoint
+        const response = await fetch('/api/book', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(submissionData),
+        });
+
+        const responseData = await response.json();
+        
+        if (!response.ok) {
+            console.error("Booking API Error:", response.status, responseData);
+            throw new Error(responseData?.message || `Booking failed with status ${response.status}`);
+        }
+
+        setShowConfirmation(true);
+        toast.success("🎉 Booking Successful! Your booking is confirmed.");
+
+        // Clear promo usage
+        if (isPromoValid && promoCode) {
+            localStorage.setItem(`used_promo_${promoCode}`, "true");
+        }
+        
+        localStorage.removeItem("claimedPromoCode");
+        localStorage.setItem("bookingConfirmed", "true");
+
+    } catch (error: any) {
+        console.error("Booking Error:", error);
+        toast.error(`❌ ${error?.message || "There was a problem submitting your booking."}`);
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
     return (
         <div className="min-h-screen text-gray-800 bg-gray-50">
@@ -1602,21 +1712,47 @@ useEffect(() => {
                                             />
                                         </div>
 
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={promoCode}
-                                                onChange={(e) => setPromoCode(e.target.value)}
-                                                placeholder="Promo Code"
-                                                className="bg-white flex-1"
-                                            />
-                                            {promoCode.trim() && (
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleApplyPromo}
-                                                    className="theme-button-accent whitespace-nowrap"
-                                                >
-                                                    Apply
-                                                </Button>
+                                        {/* Promo Code Section */}
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Promo Code (Optional)</label>
+                                            {isPromoValid ? (
+                                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Check className="h-5 w-5 text-green-600" />
+                                                            <span className="font-medium text-green-800">Discount Applied!</span>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="text-green-600 font-bold">{discountPercent}% OFF</span>
+                                                            <Button
+                                                                type="button"
+                                                                onClick={removePromoCode}
+                                                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-green-700 mt-1">Promo code: {promoCode}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center space-x-2">
+                                                    <Input
+                                                        type="text"
+                                                        placeholder="Enter Promo Code"
+                                                        value={promoCode}
+                                                        onChange={(e) => setPromoCode(e.target.value)}
+                                                        className="bg-white flex-1"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleApplyPromo}
+                                                        disabled={isCheckingPromo || !promoCode.trim()}
+                                                        className={`theme-button-accent whitespace-nowrap ${(isCheckingPromo || !promoCode.trim()) ? "opacity-50 cursor-not-allowed" : ""}`}
+                                                    >
+                                                        {isCheckingPromo ? "Checking..." : "Apply"}
+                                                    </Button>
+                                                </div>
                                             )}
                                         </div>
 
@@ -1672,4 +1808,4 @@ useEffect(() => {
     );
 };
 
-export default Booking;
+export default BookingForm;
