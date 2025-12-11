@@ -83,6 +83,13 @@ interface Promo {
     usedCount?: number;
 }
 
+interface AgentInfo {
+    id?: string;
+    name?: string;
+    email?: string;
+    [key: string]: unknown;
+}
+
 interface ApplyResponse {
     success: boolean;
     message: string;
@@ -93,7 +100,7 @@ interface ApplyResponse {
         finalAmount: number;
         promoCode: string;
         promoCodeId: string;
-        agentInfo: any;
+        agentInfo: AgentInfo;
         remainingUsage?: number | null;
         promoDetails?: Promo;
     };
@@ -104,6 +111,11 @@ interface ValidateResponse {
     valid: boolean;
     message: string;
     data?: Promo;
+}
+
+interface ValidationError {
+    field: string;
+    message: string;
 }
 
 // Single Vehicle Booking Interface - FIXED
@@ -1196,6 +1208,7 @@ const addVehicleBooking = () => {
     const handleDateChange = (date: Date | undefined) => {
         setDate(date);
         updateForm({ date: date ? date.toISOString() : "" });
+        // setOpenCalendar(false);
     };
 
 const validatePromoCode = async (code: string) => {
@@ -1203,17 +1216,14 @@ const validatePromoCode = async (code: string) => {
 
   // ---------- FRONTEND VALIDATION ----------
   if (!cleanedPromoCode) {
-    toast.error("Please enter a promo code.");
     return;
   }
 
   if (cleanedPromoCode.length < 3) {
-    toast.error("Promo code must be at least 3 characters.");
     return;
   }
 
   if (!/^[A-Z0-9]+$/.test(cleanedPromoCode)) {
-    toast.error("Promo code can only contain letters and numbers.");
     return;
   }
 
@@ -1233,14 +1243,12 @@ const validatePromoCode = async (code: string) => {
     try {
       validateResult = await validateResponse.json();
     } catch {
-      toast.error("Server error. Please try again.");
       return;
     }
 
     console.log("VALIDATE RESULT:", validateResult);
 
     if (!validateResult.success || !validateResult.valid) {
-      toast.error(validateResult.message || "Invalid promo code");
       setIsPromoValid(false);
       setDiscountPercent(0);
       setPromoCode("");
@@ -1264,7 +1272,6 @@ const validatePromoCode = async (code: string) => {
     console.log("APPLY RESULT:", applyResult);
 
     if (!applyResult.success) {
-      toast.error(applyResult.message || "Failed to apply promo.");
       setIsPromoValid(false);
       return;
     }
@@ -1274,13 +1281,8 @@ const validatePromoCode = async (code: string) => {
     setDiscountPercent(applyResult.data.discountPercentage || 0);
     setPromoCode(cleanedPromoCode);
 
-    toast.success(
-      `${applyResult.data.discountPercentage || 0}% off promo code applied.`
-    );
-
   } catch (error) {
     console.error("Promo error:", error);
-    toast.error("Error applying promo code. Try again.");
     setIsPromoValid(false);
     setDiscountPercent(0);
     setPromoCode("");
@@ -1325,67 +1327,18 @@ const handleSubmit = async (e: React.FormEvent) => {
     setIsSubmitting(true);
 
     if (!formData.email) {
-        toast.error("Please fill all the required fields.");
-        setIsSubmitting(false);
-        return;
-    }
-
-    // Validate booking data before submission
-    try {
-        const validationResponse = await fetch('/api/booking/validate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                vehicles: formData.vehicleBookings.map(vehicle => ({
-                    vehicleType: vehicle.vehicleType,
-                    vehicleMake: vehicle.vehicleMake,
-                    vehicleModel: vehicle.vehicleModel,
-                    vehicleYear: vehicle.vehicleYear,
-                    vehicleColor: vehicle.vehicleColor,
-                    vehicleSize: vehicle.vehicleLength || '',
-                    serviceType: vehicle.serviceType,
-                    selectedPackages: vehicle.package ? [{ category: vehicle.serviceType, package: vehicle.package }] : [],
-                    additionalServices: vehicle.additionalServices,
-                })),
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phone: formData.phone,
-                address: formData.address,
-                city: formData.city,
-                state: formData.state,
-                zip: formData.zip,
-                date: formData.date,
-                timeSlot: formData.timeSlot,
-                notes: formData.notes,
-            }),
-        });
-
-        const validationResult = await validationResponse.json();
-
-        if (!validationResult.success || !validationResult.valid) {
-            const errorMessages = validationResult.errors?.map((err: any) => `${err.field}: ${err.message}`).join('\n') || 'Validation failed';
-            toast.error(`Please fix the following errors:\n${errorMessages}`);
-            setIsSubmitting(false);
-            return;
-        }
-
-        toast.success("Booking data validated successfully!");
-    } catch (error) {
-        console.error('Validation error:', error);
-        toast.error("Failed to validate booking data. Please try again.");
         setIsSubmitting(false);
         return;
     }
 
     try {
         // ✅ Phone number ko simple format mein rakho (no +1 formatting)
-        let finalPhone = formData.phone.replace(/\D/g, '');
-        
+        const finalPhone = formData.phone.replace(/\D/g, '');
+
         // ✅ Prepare vehicle bookings data
         const vehicleBookingsData = formData.vehicleBookings.map(vehicle => {
             const service = serviceTypes.find(s => s.id === vehicle.serviceType);
-            
+
             let packageName = vehicle.package;
             if (service?.variants && vehicle.variant) {
                 const variant = service.variants.find(v => v.id === vehicle.variant);
@@ -1426,7 +1379,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             date: formData.date.split('T')[0], // Simple date format
             timeSlot: formData.timeSlot,
             notes: formData.notes || "",
-            
+
             // Vehicle data
             vehicles: vehicleBookingsData.map(vb => ({
                 vehicleType: vb.vehicleType,
@@ -1436,26 +1389,26 @@ const handleSubmit = async (e: React.FormEvent) => {
                 vehicleColor: vb.vehicleColor,
                 vehicleSize: vb.vehicleLength || "",
                 serviceType: "detailing", // Default or from vb.serviceType
-                selectedPackages: [{ 
-                    category: vb.serviceType, 
-                    package: vb.package 
+                selectedPackages: [{
+                    category: vb.serviceType,
+                    package: vb.package
                 }],
                 additionalServices: vb.additionalServices
             })),
-            
+
             // Pricing
             totalPrice: totalPrice,
             discountedPrice: discountedPrice,
             discountApplied: isPromoValid && discountPercent > 0,
             discountPercent: discountPercent,
             type: "booking",
-            
+
             // Additional fields from old structure
             extraService: "", // Add if needed
             extraServiceLabel: null
         };
 
-        console.log("✅ OLD STRUCTURE DATA:", JSON.stringify(submissionData, null, 2));
+        console.log("DATA:", JSON.stringify(submissionData, null, 2));
 
         // ✅ Use the OLD endpoint
         const response = await fetch('/api/book', {
@@ -1464,27 +1417,32 @@ const handleSubmit = async (e: React.FormEvent) => {
             body: JSON.stringify(submissionData),
         });
 
-        const responseData = await response.json();
-        
+        let responseData;
+        try {
+            responseData = await response.json();
+        } catch (e) {
+            console.error("Failed to parse response as JSON:", e);
+            const textResponse = await response.text();
+            throw new Error(`Booking failed with status ${response.status}: ${textResponse}`);
+        }
+
         if (!response.ok) {
             console.error("Booking API Error:", response.status, responseData);
             throw new Error(responseData?.message || `Booking failed with status ${response.status}`);
         }
 
         setShowConfirmation(true);
-        toast.success("🎉 Booking Successful! Your booking is confirmed.");
 
         // Clear promo usage
         if (isPromoValid && promoCode) {
             localStorage.setItem(`used_promo_${promoCode}`, "true");
         }
-        
+
         localStorage.removeItem("claimedPromoCode");
         localStorage.setItem("bookingConfirmed", "true");
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Booking Error:", error);
-        toast.error(`❌ ${error?.message || "There was a problem submitting your booking."}`);
     } finally {
         setIsSubmitting(false);
     }
@@ -1709,7 +1667,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                                                         <Button
                                                             variant="outline"
                                                             className={cn(
-                                                                "justify-start text-left font-normal bg-white w-full",
+                                                                "justify-start text-left font-normal bg-black w-full",
                                                                 !date && "text-muted-foreground"
                                                             )}
                                                         >

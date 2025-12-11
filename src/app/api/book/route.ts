@@ -2,6 +2,20 @@
 
 import { NextResponse } from "next/server";
 
+interface Vehicle {
+  vehicleType?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleYear?: string;
+  vehicleColor?: string;
+  vehicleSize?: string;
+  selectedPackages?: Array<{
+    category?: string;
+    package?: string;
+  }>;
+  additionalServices?: string[];
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -50,7 +64,7 @@ export async function POST(req: Request) {
 
       // Send to external dashboard API
       try {
-        const vehicleBookings = body.vehicles.map((vehicle: any, index: number) => ({
+        const vehicleBookings = body.vehicles.map((vehicle: Vehicle, index: number) => ({
           id: `${Date.now()}-${index}`,
           serviceType: vehicle.selectedPackages?.[0]?.category || 'detailing',
           variant: vehicle.vehicleType || 'unknown',
@@ -124,10 +138,11 @@ export async function POST(req: Request) {
       { message: "❌ Invalid request data" },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
-      { message: "Failed to process request", error: error.message },
+      { message: "Failed to process request", error: errorMessage },
       { status: 500 }
     );
   }
