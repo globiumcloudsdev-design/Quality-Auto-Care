@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { z, ZodIssue } from 'zod';
 
 // Define the schema for booking validation
 const vehicleSchema = z.object({
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     if (!validationResult.success) {
       // Return validation errors
-      const errors = validationResult.error.issues.map((err: any) => ({
+      const errors = validationResult.error.issues.map((err: ZodIssue) => ({
         field: err.path.join('.'),
         message: err.message,
       }));
